@@ -1,0 +1,113 @@
+:root {
+  --sidebar-breakpoint: 40rem;
+  --sidenav-width: 12.5rem;
+  --transition-time: 0.25s;
+  --topbar-height: 3.5rem;
+  --container-padding: 1.5rem;
+  --color-white: white;
+  --color-border: #e5e5e5;
+  --color-background: #f7f9f9;
+  --border-size: 0.08rem;
+  --border-style: var(--border-size) solid var(--color-border);
+  --default-spacing: 1.25rem;
+}
+/* MUST ONLY defined z-index properties here 
+   Variable definitions are ordered from front to back
+*/
+:root {
+  /* Toastify toasts have z-index: 9999 */
+  --z-index-confirm-dialog: 5000;
+  --z-index-welcome-dialog: 4000;
+  --z-index-sidebar: 2000;
+  --z-index-topbar: 1000;
+}
+
+/* 
+  TEXT STYLES 
+*/
+body {
+  font-family: overpass, sans-serif !important;
+}
+
+/* Reset margins and underlying sizes. 
+   The height 100% is necessary so child elements have a reference to be full width
+*/
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/*****
+  BODY
+  ****
+  Body is the main app container. 
+  It will always have a fix height of the entire screen
+  and only the main content area is scrollable 
+*/
+.body {
+  /* ### Todo: Substract the topbar height to prevent showing scrollbar when not necessary */
+  /* min-height: calc(100vh - var(--topbar-height)); */
+  background-color: var(--color-background);
+}
+html,
+body {
+  background-color: var(--color-background);
+}
+
+
+/*****
+  MAIN
+  ****
+  Holds the app content. Content should be responsive on the x axis
+  Overflow on the y axis is expected and will be scrollable
+*/
+#main {
+  position: relative;
+  background-color: var(--color-background);
+  padding: var(--container-padding);
+}
+
+#main > div {
+  margin-bottom: var(--default-spacing);
+}
+
+
+
+/********************
+  Generic section
+  *******************
+ */
+
+.section-spacing > * {
+  margin-bottom: var(--default-spacing);
+}
+
+/********************
+  SPECIAL STAND-ALONE
+  *******************
+  Used in:
+  - NonAdmin
+  - NoConnection
+ */
+.standalone-container {
+  display: flex;
+  flex-direction: column;
+  place-items: center;
+  padding: 5em;
+  padding: 5em 1em;
+  text-align: center;
+  background-color: var(--color-background);
+  min-height: 100vh;
+}
+
+/*************
+  Additional
+  ************
+*/
+.button-group > *:not(:last-child) {
+  margin-right: var(--default-spacing);
+}
