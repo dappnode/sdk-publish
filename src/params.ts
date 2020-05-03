@@ -1,3 +1,6 @@
+// IPFS
+export const ipfsGateway = "https://ipfs.io";
+
 // WAMP
 export const wampUrl = "ws://my.wamp.dnp.dappnode.eth:8080/ws";
 export const wampRealm = "dappnode_admin";

@@ -16,8 +16,15 @@ import resolveEns from "./sagaUtils/resolveEns";
 import apm from "./sagaUtils/apm";
 import connectToMetamask from "./sagaUtils/connectToMetamask";
 import executePublishTx from "./sagaUtils/executePublishTx";
+import { ipfsGateway } from "params"
 
-function fetchPackageData() {}
+async function fetchManifestFromIpfs(hash) {
+  try {
+    return await fetch(`${ipfsGateway}${hash}/dappnode_package.json`).then(res => res.json())
+  } catch (e) {
+    return await fetch(`${ipfsGateway}${hash}`).then(res => res.json())
+  }
+}
 
 // getRegistry("dnp.dappnode.eth");
 
@@ -173,15 +180,9 @@ const inputHanlders = {
   },
   manifestIpfsHash: function* onUpdateQueryManifestIpfsHash({ id, value }) {
     try {
-      const res = yield call(fetchPackageData, { id: value });
-      if (res.success && res.result && res.result.manifest) {
-        const manifest = (res.result || {}).manifest;
-        yield put(a.updateQueryResult("manifest", { hash: value, manifest }));
-      } else {
-        throw Error(
-          `Error fetching manifest for publish form verification: ${res.message}`
-        );
-      }
+      const ipfsHash = value;
+      const manifest = yield call(fetchManifestFromIpfs, ipfsHash);
+      yield put(a.updateQueryResult("manifest", { hash: value, manifest }));
     } catch (e) {
       console.error(`Error on update query for ${id} = ${value}: ${e.stack}`);
     }

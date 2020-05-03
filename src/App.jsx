@@ -46,7 +46,7 @@ class Publish extends React.Component {
   };
 
   componentDidMount() {
-    const urlQuery = window.location.search;
+    const urlQuery = window.location.search.replace("?", "")
     if (urlQuery) {
       try {
         const params = parseUrlQuery(urlQuery);
