@@ -12,7 +12,7 @@ To generate a pre-filled URL with the parameters to publish a release transactio
 
 Sample URL:
 
-`http://my.dappnode/#/sdk/publish/r=dappnodesdk.public.dappnode.eth&v=0.1.0&h=%2Fipfs%2FQmeam6LUYonZxNuEa5uCKJmMasVSnnCf3wc7KzUuQBf2Fd&d=0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B`
+`https://dappnode.github.io/sdk-publish/?r=dappnodesdk.public.dappnode.eth&v=0.1.0&h=%2Fipfs%2FQmeam6LUYonZxNuEa5uCKJmMasVSnnCf3wc7KzUuQBf2Fd&d=0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B`
 
 which has URL search params (URI encoded):
 
