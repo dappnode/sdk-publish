@@ -9,8 +9,12 @@ export function LoadingView({ steps }: { steps?: string[] }) {
   }, []);
 
   return (
-    <div>
-      {steps && <p>{steps[index] || steps[steps.length - 1]}...</p>}
+    <div className="loadingView">
+      {steps && (
+        <div className="steps text-muted">
+          {steps[index] || steps[steps.length - 1]}...
+        </div>
+      )}
       <ProgressBar animated now={100} />
     </div>
   );

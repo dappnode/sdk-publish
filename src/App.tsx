@@ -21,7 +21,6 @@ import { resolveDnpName } from "utils/resolveDnpName";
 import { isValidBump } from "utils/isValidBump";
 import { isIpfsHash } from "utils/isIpfsHash";
 import { isValidEns } from "utils/isValidEns";
-import "./app-new.css";
 import { ErrorView } from "components/ErrorView";
 import { LoadingView } from "components/LoadingView";
 
@@ -292,7 +291,7 @@ export function App() {
 
   return (
     <div className="app">
-      <Title title={"SDK"} subtitle={"Publish"} />
+      <Title title="SDK" subtitle="Publish" />
       <SubTitle>Transaction details</SubTitle>
       <Card>
         <div className="publish-grid">
@@ -330,11 +329,11 @@ export function App() {
               </React.Fragment>
             );
           })}
-        </div>
 
-        {/* Publish button */}
-        <div className="row">
-          <div className="col-sm-10">
+          {/* Empty left cell */}
+          <div />
+          <div className="bottom-section">
+            {/* Publish button */}
             {provider ? (
               <button
                 className="btn btn-dappnode"

@@ -10,10 +10,6 @@
   word-break: break-word;
 }
 
-details {
-  padding: 0.5em 0.5em 0;
-}
-
 .alert {
   word-break: normal !important;
 }
@@ -55,15 +51,19 @@ details {
 }
 
 /* Publish */
+
 .publish-grid {
   display: grid;
   grid-template-columns: minmax(min-content, max-content) auto;
   grid-gap: calc(var(--default-spacing) / 2) calc(var(--default-spacing) * 1);
-  margin-bottom: var(--default-spacing);
 }
 
 @media screen and (max-width: 530px) {
   .publish-grid {
     grid-template-columns: auto;
   }
+}
+
+.bottom-section > *:not(:last-child) {
+  margin-bottom: var(--default-spacing);
 }
