@@ -1,0 +1,69 @@
+.app {
+  padding: var(--default-spacing);
+}
+
+.field-name {
+  padding-top: 8px;
+}
+
+.help {
+  word-break: break-word;
+}
+
+.alert {
+  word-break: normal !important;
+}
+
+.feedback-error {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 80%;
+  color: #dc3545;
+  white-space: pre;
+}
+
+.feedback-success {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 80%;
+  color: #28a745;
+  white-space: pre;
+}
+
+.metamaskIcon {
+  width: 23px;
+  position: relative;
+  bottom: 2px;
+  margin-right: 6px;
+}
+
+/* SDK Home */
+
+.sdk-link {
+  display: grid;
+  grid-template-columns: auto min-content;
+}
+.sdk-link button {
+  text-transform: capitalize;
+}
+.sdk-link h5 {
+  margin-bottom: 0.25rem;
+}
+
+/* Publish */
+
+.publish-grid {
+  display: grid;
+  grid-template-columns: minmax(min-content, max-content) auto;
+  grid-gap: calc(var(--default-spacing) / 2) calc(var(--default-spacing) * 1);
+}
+
+@media screen and (max-width: 530px) {
+  .publish-grid {
+    grid-template-columns: auto;
+  }
+}
+
+.bottom-section > *:not(:last-child) {
+  margin-bottom: var(--default-spacing);
+}

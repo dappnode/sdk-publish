@@ -7,4 +7,4 @@
 // Into:
 //   <a href={url} {...newTabProps}>
 
-export default { rel: "noopener noreferrer", target: "_blank" };
+export const newTabProps = { rel: "noopener noreferrer", target: "_blank" };
