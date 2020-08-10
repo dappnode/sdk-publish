@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from "react";
-import web3Utils from "web3-utils";
 import { ethers } from "ethers";
 import memoizee from "memoizee";
 import { debounce } from "lodash";
@@ -234,7 +233,7 @@ export function App() {
       onValueChange: setDeveloperAddress,
       validations: [
         developerAddress
-          ? web3Utils.isAddress(developerAddress)
+          ? ethers.utils.isAddress(developerAddress)
             ? { isValid: true, message: "Valid address" }
             : { isValid: false, message: "Must be a valid ethereum address" }
           : null,
