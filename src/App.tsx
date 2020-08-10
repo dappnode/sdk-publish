@@ -3,28 +3,29 @@ import web3Utils from "web3-utils";
 import { ethers } from "ethers";
 import memoizee from "memoizee";
 import { debounce } from "lodash";
-import { parseUrlQuery } from "utils/urlQuery";
 import semver from "semver";
 // Components
-import Title from "components/Title";
-import SubTitle from "components/SubTitle";
-import Card from "components/Card";
+import { Title } from "components/Title";
+import { SubTitle } from "components/SubTitle";
+import { Card } from "components/Card";
+import { ErrorView } from "components/ErrorView";
+import { LoadingView } from "components/LoadingView";
+// Utils
+import { parseUrlQuery } from "utils/urlQuery";
 import { notNullish } from "utils/notNullish";
-// Imgs
-import metamaskIcon from "./img/metamask-white.png";
 import { executePublishTx } from "utils/executePublishTx";
 import { apmRepoIsAllowed } from "utils/apmRepoIsAllowed";
 import { getLatestVersion } from "utils/getLatestVersion";
 import { fetchManifest } from "utils/fetchManifest";
-import { RequestStatus, RepoAddresses, Manifest, FormField } from "types";
 import { resolveDnpName } from "utils/resolveDnpName";
 import { isValidBump } from "utils/isValidBump";
 import { isIpfsHash } from "utils/isIpfsHash";
 import { isValidEns } from "utils/isValidEns";
-import { ErrorView } from "components/ErrorView";
-import { LoadingView } from "components/LoadingView";
-
-const ipfsGateway = "https://ipfs.io";
+import { newTabProps } from "utils/newTabProps";
+// Imgs
+import metamaskIcon from "./img/metamask-white.png";
+import { RequestStatus, RepoAddresses, Manifest, FormField } from "types";
+import { IPFS_GATEWAY, SDK_INSTALL_URL } from "params";
 
 const fetchManifestMem = memoizee(fetchManifest, { promise: true });
 const resolveDnpNameMem = memoizee(resolveDnpName, { promise: true });
@@ -89,7 +90,7 @@ export function App() {
   const onNewManifestHash = useMemo(
     () =>
       debounce((hash: string) => {
-        fetchManifestMem(hash, ipfsGateway)
+        fetchManifestMem(hash, IPFS_GATEWAY)
           .then((manifest) => setManifest({ ...manifest, hash }))
           .catch((e) => console.error(`Error fetching manifest ${hash}`, e));
       }, 500),
@@ -292,6 +293,26 @@ export function App() {
   return (
     <div className="app">
       <Title title="SDK" subtitle="Publish" />
+      <div className="mt-3 text-muted">
+        <p>
+          This tool is part of the DAppNode Software Development Kit
+          (dappnodesdk) and allows to sign DAppNode package release transactions
+          with Metamask.
+        </p>
+        {!window.location.search && (
+          <div
+            className="alert alert-secondary"
+            role="alert"
+            style={{ backgroundColor: "#f1f1f3" }}
+          >
+            To generate a pre-filled URL with the parameters to publish a
+            release transaction install{" "}
+            <a href={SDK_INSTALL_URL} {...newTabProps}>
+              <code>@dappnode/dappnodesdk</code>
+            </a>
+          </div>
+        )}
+      </div>
       <SubTitle>Transaction details</SubTitle>
       <Card>
         <div className="publish-grid">

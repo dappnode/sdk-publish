@@ -5,7 +5,7 @@ interface TitleProps {
   subtitle?: string;
 }
 
-const Title: React.FunctionComponent<TitleProps> = ({
+export const Title: React.FunctionComponent<TitleProps> = ({
   title,
   subtitle,
   children,
@@ -20,5 +20,3 @@ const Title: React.FunctionComponent<TitleProps> = ({
     );
   return <div className="section-title">{title}</div>;
 };
-
-export default Title;

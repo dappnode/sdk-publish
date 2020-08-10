@@ -14,7 +14,7 @@ interface CardProps {
 /**
  * [NOTE] style is injected to the card-body div via ...props
  */
-const Card: React.FunctionComponent<
+export const Card: React.FunctionComponent<
   CardProps & React.HTMLAttributes<HTMLDivElement>
 > = ({
   children,
@@ -44,5 +44,3 @@ const Card: React.FunctionComponent<
     </BootstrapCard.Body>
   </BootstrapCard>
 );
-
-export default Card;

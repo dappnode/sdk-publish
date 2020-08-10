@@ -2,13 +2,13 @@ import { Manifest } from "types";
 
 export async function fetchManifest(
   hash: string,
-  ipfsGateway: string
+  IPFS_GATEWAY: string
 ): Promise<Manifest> {
   try {
     return await fetch(
-      `${ipfsGateway}${hash}/dappnode_package.json`
+      `${IPFS_GATEWAY}${hash}/dappnode_package.json`
     ).then((res) => res.json());
   } catch (e) {
-    return await fetch(`${ipfsGateway}${hash}`).then((res) => res.json());
+    return await fetch(`${IPFS_GATEWAY}${hash}`).then((res) => res.json());
   }
 }
