@@ -6,7 +6,6 @@ import { debounce } from "lodash";
 import { parseUrlQuery } from "utils/urlQuery";
 import semver from "semver";
 // Components
-import Input from "components/Input";
 import Title from "components/Title";
 import SubTitle from "components/SubTitle";
 import Card from "components/Card";
@@ -68,6 +67,7 @@ export function App() {
    */
   useEffect(() => {
     const urlParams = parseUrlQuery(window.location.search);
+    console.log("URL params", urlParams);
     if (urlParams.r) setDnpName(urlParams.r);
     if (urlParams.v) setVersion(urlParams.v);
     if (urlParams.d) setDeveloperAddress(urlParams.d);

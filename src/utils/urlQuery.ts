@@ -7,12 +7,14 @@
  * @param params
  * @returns
  */
-export const parseUrlQuery = (params = "") =>
-  params.split("&").reduce((obj: { [key: string]: string }, pair) => {
+export const parseUrlQuery = (params = "") => {
+  if (params.startsWith("?")) params = params.slice(1);
+  return params.split("&").reduce((obj: { [key: string]: string }, pair) => {
     const [key, value] = pair.split("=");
     obj[key] = decodeURIComponent(value);
     return obj;
   }, {});
+};
 
 /**
  * Reverse of parseUrlQuery, such that:
