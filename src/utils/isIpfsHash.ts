@@ -14,7 +14,7 @@ function isMultihash(hash: string) {
  *
  * @param hash
  */
-export default function isIpfsHash(hash: string): boolean {
+export function isIpfsHash(hash: string): boolean {
   if (!hash || typeof hash !== "string") return false;
   // Correct hash prefix
   if (hash.includes("ipfs/")) {

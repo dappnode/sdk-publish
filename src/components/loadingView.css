@@ -1,0 +1,8 @@
+.loadingView {
+  margin-top: var(--default-spacing);
+}
+
+.loadingView p {
+  opacity: 0.8;
+  text-align: center;
+}

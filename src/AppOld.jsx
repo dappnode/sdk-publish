@@ -19,6 +19,7 @@ import newTabProps from "./utils/newTabProps";
 import Title from "./components/Title";
 import SubTitle from "./components/SubTitle";
 import Card from "./components/Card";
+import { Publish as PublishNew } from "./AppNew";
 
 const ipfsGateway = "http://my.ipfs.dnp.dappnode.eth:8080/ipfs/";
 
@@ -30,7 +31,7 @@ let configureMetamaskListeners = (cb) => {
     cb("userAccount", accounts[0]);
   });
   // Singleton
-  configureMetamaskListeners = () => { };
+  configureMetamaskListeners = () => {};
 };
 
 const paramMapping = {
@@ -46,7 +47,7 @@ class Publish extends React.Component {
   };
 
   componentDidMount() {
-    const urlQuery = window.location.search.replace("?", "")
+    const urlQuery = window.location.search.replace("?", "");
     if (urlQuery) {
       try {
         const params = parseUrlQuery(urlQuery);
@@ -182,47 +183,9 @@ class Publish extends React.Component {
                 </div>
               </div>
             ) : null}
-
-            {/* Publish button */}
-            <div className="form-group row">
-              <div className="col-sm-10">
-                {buttonInput.connected ? (
-                  <button
-                    className="btn btn-dappnode"
-                    disabled={disablePublish}
-                    onClick={this.props.publish}
-                  >
-                    Publish
-                  </button>
-                ) : (
-                    <button
-                      className="btn btn-dappnode"
-                      onClick={this.props.connectMetamask}
-                    >
-                      <img src={metamaskIcon} alt="" className="metamaskIcon" />{" "}
-                    Connect
-                    </button>
-                  )}
-                {buttonInput.connected && buttonInput.error ? (
-                  <div className="feedback-error">
-                    {buttonInput.error.join("\n")}
-                  </div>
-                ) : buttonInput.connected && buttonInput.success ? (
-                  <div className="feedback-success">
-                    {buttonInput.success.join("\n")}
-                  </div>
-                ) : null}
-
-                {/* Generic error, for example Metamask connection error */}
-                {this.props.genericError && (
-                  <div className="feedback-error">
-                    {this.props.genericError}
-                  </div>
-                )}
-              </div>
-            </div>
           </form>
         </Card>
+        <PublishNew></PublishNew>
       </div>
     );
   }

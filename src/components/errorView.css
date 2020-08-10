@@ -1,0 +1,8 @@
+.errorView {
+  color: var(--danger-color);
+}
+
+.errorView pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
