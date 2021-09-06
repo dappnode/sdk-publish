@@ -67,3 +67,7 @@
 .bottom-section > *:not(:last-child) {
   margin-bottom: var(--default-spacing);
 }
+
+.bottom-buttons > *:not(:last-child) {
+  margin-right: var(--default-spacing);
+}
