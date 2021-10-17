@@ -21,6 +21,7 @@ import { isValidBump } from "utils/isValidBump";
 import { isIpfsHash } from "utils/isIpfsHash";
 import { isValidEns } from "utils/isValidEns";
 import { newTabProps } from "utils/newTabProps";
+import { readIpfsApiUrls, writeIpfsApiUrls } from "./settings";
 // Imgs
 import metamaskIcon from "./img/metamask-white.png";
 import { RequestStatus, RepoAddresses, Manifest, FormField } from "types";
@@ -44,6 +45,9 @@ const getInputClass = ({
 }) => (error ? "is-invalid" : success ? "is-valid" : "");
 
 export function App() {
+  // Settings
+  const [showSettings, setShowSettings] = useState(false);
+  const [apiUrls, setApiUrls] = useState(readIpfsApiUrls());
   // Form input variables
   const [dnpName, setDnpName] = useState("");
   const [version, setVersion] = useState("");
@@ -63,6 +67,9 @@ export function App() {
 
   // Precomputed variables
   const provider = providerReq.result;
+
+  // Persist apiUrls settings
+  useEffect(() => writeIpfsApiUrls(apiUrls), [apiUrls]);
 
   /**
    * Grab the params from the URL and update local state
@@ -433,6 +440,30 @@ export function App() {
           </div>
         </div>
       </Card>
+
+      {showSettings ? (
+        <>
+          <SubTitle>Settings</SubTitle>
+          <Card>
+            <div className="field-name">IPFS API URLs</div>
+            <textarea
+              className={"form-control"}
+              placeholder="https://ipfs-api.demo"
+              value={apiUrls}
+              onChange={(e) => setApiUrls(e.target.value)}
+            />
+          </Card>
+        </>
+      ) : (
+        <div className="settings-container">
+          <span
+            className="show-settings text-muted"
+            onClick={() => setShowSettings(true)}
+          >
+            Edit settings
+          </span>
+        </div>
+      )}
     </div>
   );
 }

@@ -71,3 +71,10 @@
 .bottom-buttons > *:not(:last-child) {
   margin-right: var(--default-spacing);
 }
+
+.settings-container {
+  margin-top: 1rem;
+}
+.show-settings {
+  cursor: pointer;
+}
