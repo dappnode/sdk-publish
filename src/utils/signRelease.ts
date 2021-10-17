@@ -6,14 +6,14 @@ import { base64, base64url } from "multiformats/bases/base64";
 import { ethers } from "ethers";
 import sortBy from "lodash/sortBy";
 import { signatureFileName } from "params";
+import { parseIpfsPath } from "./isIpfsHash";
 
 export async function signRelease(
   releaseHash: string,
   ipfsHost: string
 ): Promise<string> {
   // Format release hash, remove prefix
-  if (releaseHash.startsWith("/ipfs/")) releaseHash = releaseHash.slice(6);
-  if (releaseHash.startsWith("ipfs/")) releaseHash = releaseHash.slice(5);
+  releaseHash = parseIpfsPath(releaseHash);
 
   const ipfs = create({ url: ipfsHost });
 

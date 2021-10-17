@@ -26,7 +26,7 @@ import metamaskIcon from "./img/metamask-white.png";
 import { RequestStatus, RepoAddresses, Manifest, FormField } from "types";
 import { ipfsHost, IPFS_GATEWAY, SDK_INSTALL_URL } from "params";
 import { signRelease } from "utils/signRelease";
-import { fetchReleaseIncludesSignature } from "utils/fetchRelease";
+import { fetchReleaseSignature } from "utils/fetchRelease";
 
 const fetchManifestMem = memoizee(fetchManifest, { promise: true });
 const resolveDnpNameMem = memoizee(resolveDnpName, { promise: true });
@@ -97,9 +97,12 @@ export function App() {
           .then((manifest) => setManifest({ ...manifest, hash }))
           .catch((e) => console.error(`Error fetching manifest ${hash}`, e));
 
-        fetchReleaseIncludesSignature(hash, IPFS_GATEWAY)
-          .then((isSigned) => setIsSigned(isSigned))
-          .catch((e) => console.error(`Error fetching release ${hash}`, e));
+        fetchReleaseSignature(hash, IPFS_GATEWAY)
+          .then(() => setIsSigned(true))
+          .catch((e) => {
+            console.error(`Error fetching release ${hash}`, e);
+            setIsSigned(false);
+          });
       }, 500),
     []
   );
