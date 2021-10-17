@@ -7,4 +7,3 @@ export const SDK_INSTALL_URL = "https://github.com/dappnode/DAppNodeSDK";
 
 export const signatureFileName = "signature.json";
 export const manifestFileName = "dappnode_package.json";
-export const ipfsHost = "http://ipfs.dappnode.io:5001";

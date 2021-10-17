@@ -21,11 +21,15 @@ import { isValidBump } from "utils/isValidBump";
 import { isIpfsHash } from "utils/isIpfsHash";
 import { isValidEns } from "utils/isValidEns";
 import { newTabProps } from "utils/newTabProps";
-import { readIpfsApiUrls, writeIpfsApiUrls } from "./settings";
+import {
+  parseIpfsApiUrls,
+  readIpfsApiUrls,
+  writeIpfsApiUrls,
+} from "./settings";
 // Imgs
 import metamaskIcon from "./img/metamask-white.png";
 import { RequestStatus, RepoAddresses, Manifest, FormField } from "types";
-import { ipfsHost, IPFS_GATEWAY, SDK_INSTALL_URL } from "params";
+import { IPFS_GATEWAY, SDK_INSTALL_URL } from "params";
 import { signRelease } from "utils/signRelease";
 import { fetchReleaseSignature } from "utils/fetchRelease";
 
@@ -47,7 +51,7 @@ const getInputClass = ({
 export function App() {
   // Settings
   const [showSettings, setShowSettings] = useState(false);
-  const [apiUrls, setApiUrls] = useState(readIpfsApiUrls());
+  const [ipfsApiUrls, setIpfsApiUrls] = useState(readIpfsApiUrls());
   // Form input variables
   const [dnpName, setDnpName] = useState("");
   const [version, setVersion] = useState("");
@@ -69,7 +73,7 @@ export function App() {
   const provider = providerReq.result;
 
   // Persist apiUrls settings
-  useEffect(() => writeIpfsApiUrls(apiUrls), [apiUrls]);
+  useEffect(() => writeIpfsApiUrls(ipfsApiUrls), [ipfsApiUrls]);
 
   /**
    * Grab the params from the URL and update local state
@@ -170,7 +174,10 @@ export function App() {
     try {
       setSignReq({ loading: true });
       // newReleaseHash is not prefixed by '/ipfs/'
-      const newReleaseHash = await signRelease(releaseHash, ipfsHost);
+      const newReleaseHash = await signRelease(
+        releaseHash,
+        parseIpfsApiUrls(ipfsApiUrls)
+      );
       setSignReq({ result: newReleaseHash });
       setReleaseHash(`/ipfs/${newReleaseHash}`);
     } catch (e) {
@@ -449,8 +456,8 @@ export function App() {
             <textarea
               className={"form-control"}
               placeholder="https://ipfs-api.demo"
-              value={apiUrls}
-              onChange={(e) => setApiUrls(e.target.value)}
+              value={ipfsApiUrls}
+              onChange={(e) => setIpfsApiUrls(e.target.value)}
             />
           </Card>
         </>

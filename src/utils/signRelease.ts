@@ -10,12 +10,17 @@ import { parseIpfsPath } from "./isIpfsHash";
 
 export async function signRelease(
   releaseHash: string,
-  ipfsHost: string
+  ipfsApiUrls: string[]
 ): Promise<string> {
+  if (ipfsApiUrls.length < 1) {
+    throw Error("ipfsApiUrls is empty");
+  }
+
+  const ipfsArr = ipfsApiUrls.map((ipfsApiUrl) => create({ url: ipfsApiUrl }));
+  const [ipfs, ...ipfsExtras] = ipfsArr;
+
   // Format release hash, remove prefix
   releaseHash = parseIpfsPath(releaseHash);
-
-  const ipfs = create({ url: ipfsHost });
 
   const releaseFiles = await all(ipfs.ls(releaseHash));
   if (releaseFiles.find((f) => f.name === signatureFileName)) {
@@ -41,29 +46,36 @@ export async function signRelease(
     signature: flatSig,
   };
 
-  const signatureIpfsEntry = await ipfs.add(JSON.stringify(signature, null, 2));
+  const signatureJson = JSON.stringify(signature, null, 2);
+  const signatureIpfsEntry = await ipfs.add(signatureJson);
+  // Upload to redundant nodes if any
+  for (const ipfsExtra of ipfsExtras) await ipfsExtra.add(signatureJson);
 
-  const getRes: IpfsDagGetResult<IpfsDagPbValue> = await ipfs.dag.get(
+  const releaseRootDag: IpfsDagGetResult<IpfsDagPbValue> = await ipfs.dag.get(
     CID.parse(releaseHash)
   );
 
   // Mutate dag-pb value appending a new Link
   // TODO: What happens if the block becomes too big
-  getRes.value.Links.push({
+  releaseRootDag.value.Links.push({
     Hash: signatureIpfsEntry.cid,
     Name: signatureFileName,
     Tsize: signatureIpfsEntry.size,
   });
 
   // DAG-PB form (links must be sorted by Name then bytes)
-  getRes.value.Links = sortBy(getRes.value.Links, ["Name", "Bytes"]);
+  releaseRootDag.value.Links = sortBy(releaseRootDag.value.Links, [
+    "Name",
+    "Bytes",
+  ]);
 
-  console.log(getRes);
+  console.log(releaseRootDag);
 
-  const newReleaseCid = await ipfs.dag.put(getRes.value, {
-    format: "dag-pb",
-    hashAlg: "sha2-256",
-  });
+  const dagProps = { format: "dag-pb", hashAlg: "sha2-256" };
+  const newReleaseCid = await ipfs.dag.put(releaseRootDag.value, dagProps);
+  // Upload to redundant nodes if any
+  for (const ipfsExtra of ipfsExtras)
+    await ipfsExtra.dag.put(releaseRootDag.value, dagProps);
 
   // Validate that the new release hash contains all previous files + signature
   const newReleaseFiles = await all(ipfs.ls(newReleaseCid));
