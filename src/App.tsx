@@ -453,9 +453,13 @@ export function App() {
           <SubTitle>Settings</SubTitle>
           <Card>
             <div className="field-name">IPFS API URLs</div>
+            <p className="text-muted">
+              You can specify multiple URLs, to facilitate propagation of the
+              signed release
+            </p>
             <textarea
               className={"form-control"}
-              placeholder="https://ipfs-api.demo"
+              placeholder="https://ipfs.infura.io:5001 &#13;&#10;http://your-own-ipfs-node:5001"
               value={ipfsApiUrls}
               onChange={(e) => setIpfsApiUrls(e.target.value)}
             />
