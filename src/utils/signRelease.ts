@@ -1,5 +1,4 @@
-import { create, CID } from "ipfs-http-client";
-import all from "it-all";
+import { create, CID, IPFSHTTPClient } from "ipfs-http-client";
 import { base58btc } from "multiformats/bases/base58";
 import { base32 } from "multiformats/bases/base32";
 import { base64, base64url } from "multiformats/bases/base64";
@@ -7,11 +6,10 @@ import { ethers } from "ethers";
 import sortBy from "lodash/sortBy";
 import { signatureFileName } from "params";
 import { parseIpfsPath } from "./isIpfsHash";
+import { IPFSEntry } from "ipfs-core-types/src/root";
+import path from "path";
 
-export async function signRelease(
-  releaseHash: string,
-  ipfsApiUrls: string[]
-): Promise<string> {
+export async function signRelease(releaseHash: string, ipfsApiUrls: string[]): Promise<string> {
   if (ipfsApiUrls.length < 1) {
     throw Error("ipfsApiUrls is empty");
   }
@@ -22,7 +20,7 @@ export async function signRelease(
   // Format release hash, remove prefix
   releaseHash = parseIpfsPath(releaseHash);
 
-  const releaseFiles = await all(ipfs.ls(releaseHash));
+  const releaseFiles = await dagGet(ipfs, releaseHash);
   if (releaseFiles.find((f) => f.name === signatureFileName)) {
     throw Error("Release is already signed");
   }
@@ -51,9 +49,7 @@ export async function signRelease(
   // Upload to redundant nodes if any
   for (const ipfsExtra of ipfsExtras) await ipfsExtra.add(signatureJson);
 
-  const releaseRootDag: IpfsDagGetResult<IpfsDagPbValue> = await ipfs.dag.get(
-    CID.parse(releaseHash)
-  );
+  const releaseRootDag: IpfsDagGetResult<IpfsDagPbValue> = await ipfs.dag.get(CID.parse(releaseHash));
 
   // Mutate dag-pb value appending a new Link
   // TODO: What happens if the block becomes too big
@@ -64,27 +60,19 @@ export async function signRelease(
   });
 
   // DAG-PB form (links must be sorted by Name then bytes)
-  releaseRootDag.value.Links = sortBy(releaseRootDag.value.Links, [
-    "Name",
-    "Bytes",
-  ]);
+  releaseRootDag.value.Links = sortBy(releaseRootDag.value.Links, ["Name", "Bytes"]);
 
   console.log(releaseRootDag);
 
   const dagProps = { format: "dag-pb", hashAlg: "sha2-256" };
   const newReleaseCid = await ipfs.dag.put(releaseRootDag.value, dagProps);
   // Upload to redundant nodes if any
-  for (const ipfsExtra of ipfsExtras)
-    await ipfsExtra.dag.put(releaseRootDag.value, dagProps);
+  for (const ipfsExtra of ipfsExtras) await ipfsExtra.dag.put(releaseRootDag.value, dagProps);
 
   // Validate that the new release hash contains all previous files + signature
-  const newReleaseFiles = await all(ipfs.ls(newReleaseCid));
-  const newFilesStr = JSON.stringify(
-    newReleaseFiles.map((file) => file.name).sort()
-  );
-  const expectedFilesStr = JSON.stringify(
-    [...releaseFiles.map((file) => file.name), signatureFileName].sort()
-  );
+  const newReleaseFiles = await dagGet(ipfs, newReleaseCid.toString());
+  const newFilesStr = JSON.stringify(newReleaseFiles.map((file) => file.name).sort());
+  const expectedFilesStr = JSON.stringify([...releaseFiles.map((file) => file.name), signatureFileName].sort());
   if (newFilesStr !== expectedFilesStr) {
     throw Error(`Wrong files in new release: ${newFilesStr}`);
   }
@@ -127,10 +115,7 @@ interface IpfsDagGetResult<V> {
  * docker-compose.yml zdj7Wf2pYesVyvSbcTEwWVd8TFtTjv588FET9L7qgkP47kRkf
  * ```
  */
-function serializeIpfsDirectory(
-  files: { name: string; cid: CID }[],
-  opts: ReleaseSignature["cid"]
-): string {
+function serializeIpfsDirectory(files: { name: string; cid: CID }[], opts: ReleaseSignature["cid"]): string {
   return (
     files
       .filter((file) => file.name !== signatureFileName)
@@ -138,10 +123,7 @@ function serializeIpfsDirectory(
       .sort((a, b) => a.name.localeCompare(b.name))
       /** `${name} ${cidStr}` */
       .map((file) => {
-        const cidStr = cidToString(
-          getCidAtVersion(file.cid, opts.version),
-          opts.base
-        );
+        const cidStr = cidToString(getCidAtVersion(file.cid, opts.version), opts.base);
         return `${file.name} ${cidStr}`;
       })
       .join("\n")
@@ -190,4 +172,38 @@ function cidToString(cid: CID, base: string): string {
     default:
       throw Error(`Unknown CID base ${base}`);
   }
+}
+
+interface IpfsDagGet {
+  Name: string;
+  Size: number;
+  Hash: string;
+}
+
+/**
+ * REMOTE
+ * List items in CID using Gateway endpoint /dag/get
+ * IMPORTANT! ipfs.ls method not allowed in infura gateway, must be used dag-get
+ * @param ipfs
+ * @param hash
+ */
+export async function dagGet(ipfs: IPFSHTTPClient, hash: string): Promise<IPFSEntry[]> {
+  const files: IPFSEntry[] = [];
+  const hashSanitized = parseIpfsPath(hash);
+  const cid = CID.parse(hashSanitized);
+  const content = await ipfs.dag.get(cid);
+  const contentLinks: IpfsDagGet[] = content.value.Links;
+  if (!contentLinks) throw Error(`hash ${hashSanitized} does not contain links`);
+  // eslint-disable-next-line array-callback-return
+  contentLinks.map((link) => {
+    if (!cid) throw Error("Error getting cid");
+    files.push({
+      type: "file",
+      cid: CID.parse(parseIpfsPath(link.Hash.toString())),
+      name: link.Name,
+      path: path.join(link.Hash.toString(), link.Name),
+      size: link.Size,
+    });
+  });
+  return files;
 }
