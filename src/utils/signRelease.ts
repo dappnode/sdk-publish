@@ -1,4 +1,4 @@
-import { create, CID, IPFSHTTPClient } from "ipfs-http-client";
+import { create, CID } from "ipfs-http-client";
 import { base58btc } from "multiformats/bases/base58";
 import { base32 } from "multiformats/bases/base32";
 import { base64, base64url } from "multiformats/bases/base64";
@@ -6,7 +6,6 @@ import { ethers } from "ethers";
 import sortBy from "lodash/sortBy";
 import { signatureFileName } from "params";
 import { parseIpfsPath } from "./isIpfsHash";
-import { IPFSEntry } from "ipfs-core-types/src/root";
 
 export async function signRelease(
   releaseHash: string,
@@ -197,37 +196,6 @@ interface IpfsDagGet {
   Name: string;
   Size: number;
   Hash: string;
-}
-
-/**
- * REMOTE
- * List items in CID using Gateway endpoint /dag/get
- * IMPORTANT! ipfs.ls method not allowed in infura gateway, must be used dag-get
- * @param ipfs
- * @param hash
- */
-export async function dagGet(
-  ipfs: IPFSHTTPClient,
-  hash: string
-): Promise<IPFSEntry[]> {
-  const hashSanitized = parseIpfsPath(hash);
-  const cid = CID.parse(hashSanitized);
-  if (!cid) {
-    throw Error("Error getting cid");
-  }
-  const content = await ipfs.dag.get(cid);
-  const contentLinks: IpfsDagGet[] = content.value.Links;
-  if (!contentLinks) {
-    throw Error(`hash ${hashSanitized} does not contain links`);
-  }
-
-  return contentLinks.map((link) => ({
-    type: "file",
-    cid: CID.parse(parseIpfsPath(link.Hash.toString())),
-    name: link.Name,
-    path: `${link.Hash.toString()}/${link.Name}`,
-    size: link.Size,
-  }));
 }
 
 function dagGetToFiles(
