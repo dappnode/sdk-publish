@@ -5,6 +5,13 @@ function isMultihash(hash: string) {
   return isIPFS.cid(hash);
 }
 
+export function parseIpfsPath(hash: string): string {
+  if (hash.includes("ipfs/")) {
+    hash = hash.split("ipfs/")[1];
+  }
+  return hash;
+}
+
 /**
  * Checks if the given string is a valid IPFS CID or path
  *
@@ -17,9 +24,7 @@ function isMultihash(hash: string) {
 export function isIpfsHash(hash: string): boolean {
   if (!hash || typeof hash !== "string") return false;
   // Correct hash prefix
-  if (hash.includes("ipfs/")) {
-    hash = hash.split("ipfs/")[1];
-  }
+  hash = parseIpfsPath(hash);
   hash.replace("/", "");
   // Make sure hash if valid
   return isMultihash(hash);

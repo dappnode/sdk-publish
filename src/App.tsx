@@ -21,10 +21,17 @@ import { isValidBump } from "utils/isValidBump";
 import { isIpfsHash } from "utils/isIpfsHash";
 import { isValidEns } from "utils/isValidEns";
 import { newTabProps } from "utils/newTabProps";
+import {
+  parseIpfsApiUrls,
+  readIpfsApiUrls,
+  writeIpfsApiUrls,
+} from "./settings";
 // Imgs
 import metamaskIcon from "./img/metamask-white.png";
 import { RequestStatus, RepoAddresses, Manifest, FormField } from "types";
 import { IPFS_GATEWAY, SDK_INSTALL_URL } from "params";
+import { signRelease } from "utils/signRelease";
+import { fetchReleaseSignature } from "utils/fetchRelease";
 
 const fetchManifestMem = memoizee(fetchManifest, { promise: true });
 const resolveDnpNameMem = memoizee(resolveDnpName, { promise: true });
@@ -42,23 +49,31 @@ const getInputClass = ({
 }) => (error ? "is-invalid" : success ? "is-valid" : "");
 
 export function App() {
+  // Settings
+  const [showSettings, setShowSettings] = useState(false);
+  const [ipfsApiUrls, setIpfsApiUrls] = useState(readIpfsApiUrls());
   // Form input variables
   const [dnpName, setDnpName] = useState("");
   const [version, setVersion] = useState("");
   const [developerAddress, setDeveloperAddress] = useState("");
-  const [manifestHash, setManifestHash] = useState("");
+  const [releaseHash, setReleaseHash] = useState("");
   const [manifest, setManifest] = useState<Manifest & { hash: string }>();
+  const [isSigned, setIsSigned] = useState<boolean | null>(null);
   const [repoAddresses, setRepoAddresses] = useState<RepoAddresses>();
   const [latestVersion, setLatestVersion] = useState<string>();
   const [providerReq, setProviderReq] = useState<
     RequestStatus<ethers.providers.Web3Provider>
   >({});
+  const [signReq, setSignReq] = useState<RequestStatus<string>>({});
   const [publishReqStatus, setPublishReqStatus] = useState<
     RequestStatus<string>
   >({});
 
   // Precomputed variables
   const provider = providerReq.result;
+
+  // Persist apiUrls settings
+  useEffect(() => writeIpfsApiUrls(ipfsApiUrls), [ipfsApiUrls]);
 
   /**
    * Grab the params from the URL and update local state
@@ -70,7 +85,7 @@ export function App() {
     if (urlParams.r) setDnpName(urlParams.r);
     if (urlParams.v) setVersion(urlParams.v);
     if (urlParams.d) setDeveloperAddress(urlParams.d);
-    if (urlParams.h) setManifestHash(urlParams.h);
+    if (urlParams.h) setReleaseHash(urlParams.h);
   }, []);
 
   useEffect(() => {
@@ -92,6 +107,13 @@ export function App() {
         fetchManifestMem(hash, IPFS_GATEWAY)
           .then((manifest) => setManifest({ ...manifest, hash }))
           .catch((e) => console.error(`Error fetching manifest ${hash}`, e));
+
+        fetchReleaseSignature(hash, IPFS_GATEWAY)
+          .then(() => setIsSigned(true))
+          .catch((e) => {
+            console.error(`Error fetching release ${hash}`, e);
+            setIsSigned(false);
+          });
       }, 500),
     []
   );
@@ -110,8 +132,8 @@ export function App() {
   );
 
   useEffect(() => {
-    if (manifestHash) onNewManifestHash(manifestHash);
-  }, [manifestHash, onNewManifestHash]);
+    if (releaseHash) onNewManifestHash(releaseHash);
+  }, [releaseHash, onNewManifestHash]);
 
   useEffect(() => {
     if (dnpName && isValidEns(dnpName) && provider)
@@ -143,7 +165,24 @@ export function App() {
         throw Error("Non-Ethereum browser detected. Please, install MetaMask");
       }
     } catch (e) {
-      setProviderReq({ error: e });
+      console.error(e);
+      setProviderReq({ error: e as Error });
+    }
+  }
+
+  async function doSignRelease() {
+    try {
+      setSignReq({ loading: true });
+      // newReleaseHash is not prefixed by '/ipfs/'
+      const newReleaseHash = await signRelease(
+        releaseHash,
+        parseIpfsApiUrls(ipfsApiUrls)
+      );
+      setSignReq({ result: newReleaseHash });
+      setReleaseHash(`/ipfs/${newReleaseHash}`);
+    } catch (e) {
+      console.error(e);
+      setSignReq({ error: e as Error });
     }
   }
 
@@ -151,7 +190,7 @@ export function App() {
     try {
       if (!dnpName) throw Error("Must provide a dnpName");
       if (!version) throw Error("Must provide a version");
-      if (!manifestHash) throw Error("Must provide a manifestHash");
+      if (!releaseHash) throw Error("Must provide a manifestHash");
 
       setPublishReqStatus({ loading: true });
 
@@ -179,12 +218,13 @@ export function App() {
       }
 
       const txHash = await executePublishTx(
-        { dnpName, version, manifestHash, developerAddress },
+        { dnpName, version, manifestHash: releaseHash, developerAddress },
         provider
       );
       setPublishReqStatus({ result: txHash });
     } catch (e) {
-      setPublishReqStatus({ error: e });
+      console.error(e);
+      setPublishReqStatus({ error: e as Error });
     }
   }
 
@@ -196,8 +236,7 @@ export function App() {
       id: "dnpName",
       name: "DAppNode Package name",
       placeholder: "full ENS name",
-      help:
-        "ENS name of the DAppNode Package to update, i.e. timeapp.public.dappnode.eth",
+      help: "ENS name of the DAppNode Package to update, i.e. timeapp.public.dappnode.eth",
       value: dnpName,
       onValueChange: setDnpName,
       validations: [
@@ -260,22 +299,21 @@ export function App() {
       ],
     },
     {
-      id: "manifestIpfsHash",
-      name: "Manifest hash",
+      id: "releaseIpfsHash",
+      name: "Release hash",
       placeholder: "IPFS multihash",
-      help:
-        "IPFS hash of the manifest. Must be in the format /ipfs/[multihash], i.e. /ipfs/QmVeaz5kR55nAiGjYpXpUAJpWvf6net4MbGFNjBfMTS8xS",
-      value: manifestHash,
-      onValueChange: setManifestHash,
+      help: "IPFS hash of the release. Must be in the format /ipfs/[multihash], i.e. /ipfs/QmVeaz5kR55nAiGjYpXpUAJpWvf6net4MbGFNjBfMTS8xS",
+      value: releaseHash,
+      onValueChange: setReleaseHash,
       validations: [
-        manifestHash
-          ? isIpfsHash(manifestHash)
+        releaseHash
+          ? isIpfsHash(releaseHash)
             ? { isValid: true, message: "Valid ipfs hash" }
             : { isValid: false, message: "Invalid ipfs hash" }
           : null,
         manifest &&
-        manifestHash &&
-        manifestHash === manifest.hash &&
+        releaseHash &&
+        releaseHash === manifest.hash &&
         manifest.name &&
         manifest.version
           ? manifest.name === dnpName && manifest.version === version
@@ -284,6 +322,11 @@ export function App() {
                 isValid: false,
                 message: `Manifest verification failed. This manifest is for ${manifest.name} @ ${manifest.version}`,
               }
+          : null,
+        isSigned === true
+          ? { isValid: true, message: "Release is signed" }
+          : isSigned === false
+          ? { isValid: false, message: "Release not signed" }
           : null,
       ],
     },
@@ -333,13 +376,13 @@ export function App() {
                     onChange={(e) => field.onValueChange(e.target.value)}
                   />
                   {success.map((item, i) => (
-                    <div className="valid-feedback">
-                      <div key={i}>{item.message}</div>
+                    <div key={i} className="valid-feedback">
+                      <div>{item.message}</div>
                     </div>
                   ))}
                   {errors.map((item, i) => (
-                    <div className="invalid-feedback">
-                      <div key={i}>{item.message}</div>
+                    <div key={i} className="invalid-feedback">
+                      <div>{item.message}</div>
                     </div>
                   ))}
                   <small className="form-text text-muted help">
@@ -354,29 +397,42 @@ export function App() {
           <div />
           <div className="bottom-section">
             {/* Publish button */}
-            {provider ? (
-              <button
-                className="btn btn-dappnode"
-                disabled={publishReqStatus.loading}
-                onClick={publish}
-              >
-                Publish
-              </button>
-            ) : (
-              <button
-                className="btn btn-dappnode"
-                disabled={providerReq.loading}
-                onClick={connectToMetamask}
-              >
-                <img src={metamaskIcon} alt="" className="metamaskIcon" />{" "}
-                Connect to Metamask
-              </button>
-            )}
+            <div className="bottom-buttons">
+              {provider ? (
+                <button
+                  className="btn btn-dappnode"
+                  disabled={publishReqStatus.loading}
+                  onClick={publish}
+                >
+                  Publish
+                </button>
+              ) : (
+                <button
+                  className="btn btn-dappnode"
+                  disabled={providerReq.loading}
+                  onClick={connectToMetamask}
+                >
+                  <img src={metamaskIcon} alt="" className="metamaskIcon" />{" "}
+                  Connect to Metamask
+                </button>
+              )}
+              {providerReq.result && (
+                <button
+                  className="btn btn-dappnode"
+                  disabled={signReq.loading || isSigned === true}
+                  onClick={doSignRelease}
+                >
+                  Sign release
+                </button>
+              )}
+            </div>
 
             {providerReq.error && <ErrorView error={providerReq.error} />}
             {providerReq.loading && (
               <LoadingView steps={["Connecting to Metamask"]} />
             )}
+            {signReq.error && <ErrorView error={signReq.error} />}
+            {signReq.loading && <LoadingView steps={["Signing release"]} />}
             {publishReqStatus.error && (
               <ErrorView error={publishReqStatus.error} />
             )}
@@ -391,6 +447,34 @@ export function App() {
           </div>
         </div>
       </Card>
+
+      {showSettings ? (
+        <>
+          <SubTitle>Settings</SubTitle>
+          <Card>
+            <div className="field-name">IPFS API URLs</div>
+            <p className="text-muted">
+              You can specify multiple URLs, to facilitate propagation of the
+              signed release
+            </p>
+            <textarea
+              className={"form-control"}
+              placeholder="https://ipfs.infura.io:5001 &#13;&#10;http://your-own-ipfs-node:5001"
+              value={ipfsApiUrls}
+              onChange={(e) => setIpfsApiUrls(e.target.value)}
+            />
+          </Card>
+        </>
+      ) : (
+        <div className="settings-container">
+          <span
+            className="show-settings text-muted"
+            onClick={() => setShowSettings(true)}
+          >
+            Edit settings
+          </span>
+        </div>
+      )}
     </div>
   );
 }
