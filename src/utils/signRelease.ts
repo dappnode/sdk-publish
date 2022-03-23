@@ -69,9 +69,14 @@ export async function signRelease(
     "Bytes",
   ]);
 
-  console.log(releaseRootDag);
+  console.log("releaseRootDag", releaseRootDag);
 
-  const dagProps = { format: "dag-pb", hashAlg: "sha2-256" };
+  // Strongly type the options to ensure all properties are known
+  const dagProps: Parameters<typeof ipfs.dag.put>[1] = {
+    storeCodec: "dag-pb",
+    hashAlg: "sha2-256",
+  };
+
   const newReleaseCid = await ipfs.dag.put(releaseRootDag.value, dagProps);
   // Upload to redundant nodes if any
   for (const ipfsExtra of ipfsExtras)
@@ -88,6 +93,8 @@ export async function signRelease(
   if (newFilesStr !== expectedFilesStr) {
     throw Error(`Wrong files in new release: ${newFilesStr}`);
   }
+
+  console.log("newReleaseCid", newReleaseCid);
 
   return newReleaseCid.toV0().toString();
 }
