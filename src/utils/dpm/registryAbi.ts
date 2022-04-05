@@ -4,11 +4,11 @@ export const registryAbi = [
       {
         internalType: "string",
         name: "_registryName",
-        type: "string"
-      }
+        type: "string",
+      },
     ],
     stateMutability: "nonpayable",
-    type: "constructor"
+    type: "constructor",
   },
   {
     anonymous: false,
@@ -17,23 +17,23 @@ export const registryAbi = [
         indexed: false,
         internalType: "uint256",
         name: "packageIdx",
-        type: "uint256"
+        type: "uint256",
       },
       {
         indexed: false,
         internalType: "string",
         name: "name",
-        type: "string"
+        type: "string",
       },
       {
         indexed: false,
         internalType: "address",
         name: "repo",
-        type: "address"
-      }
+        type: "address",
+      },
     ],
     name: "AddPackage",
-    type: "event"
+    type: "event",
   },
   {
     anonymous: false,
@@ -42,23 +42,23 @@ export const registryAbi = [
         indexed: true,
         internalType: "bytes32",
         name: "role",
-        type: "bytes32"
+        type: "bytes32",
       },
       {
         indexed: true,
         internalType: "bytes32",
         name: "previousAdminRole",
-        type: "bytes32"
+        type: "bytes32",
       },
       {
         indexed: true,
         internalType: "bytes32",
         name: "newAdminRole",
-        type: "bytes32"
-      }
+        type: "bytes32",
+      },
     ],
     name: "RoleAdminChanged",
-    type: "event"
+    type: "event",
   },
   {
     anonymous: false,
@@ -67,23 +67,23 @@ export const registryAbi = [
         indexed: true,
         internalType: "bytes32",
         name: "role",
-        type: "bytes32"
+        type: "bytes32",
       },
       {
         indexed: true,
         internalType: "address",
         name: "account",
-        type: "address"
+        type: "address",
       },
       {
         indexed: true,
         internalType: "address",
         name: "sender",
-        type: "address"
-      }
+        type: "address",
+      },
     ],
     name: "RoleGranted",
-    type: "event"
+    type: "event",
   },
   {
     anonymous: false,
@@ -92,23 +92,23 @@ export const registryAbi = [
         indexed: true,
         internalType: "bytes32",
         name: "role",
-        type: "bytes32"
+        type: "bytes32",
       },
       {
         indexed: true,
         internalType: "address",
         name: "account",
-        type: "address"
+        type: "address",
       },
       {
         indexed: true,
         internalType: "address",
         name: "sender",
-        type: "address"
-      }
+        type: "address",
+      },
     ],
     name: "RoleRevoked",
-    type: "event"
+    type: "event",
   },
   {
     anonymous: false,
@@ -117,17 +117,17 @@ export const registryAbi = [
         indexed: false,
         internalType: "uint256",
         name: "packageIdx",
-        type: "uint256"
+        type: "uint256",
       },
       {
         indexed: false,
         internalType: "address",
         name: "repo",
-        type: "address"
-      }
+        type: "address",
+      },
     ],
     name: "UpdateRepo",
-    type: "event"
+    type: "event",
   },
   {
     anonymous: false,
@@ -136,17 +136,17 @@ export const registryAbi = [
         indexed: false,
         internalType: "uint256",
         name: "packageIdx",
-        type: "uint256"
+        type: "uint256",
       },
       {
         indexed: false,
         internalType: "uint8",
         name: "flags",
-        type: "uint8"
-      }
+        type: "uint8",
+      },
     ],
     name: "UpdateStatus",
-    type: "event"
+    type: "event",
   },
   {
     inputs: [],
@@ -155,11 +155,11 @@ export const registryAbi = [
       {
         internalType: "bytes32",
         name: "",
-        type: "bytes32"
-      }
+        type: "bytes32",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [],
@@ -168,11 +168,11 @@ export const registryAbi = [
       {
         internalType: "bytes32",
         name: "",
-        type: "bytes32"
-      }
+        type: "bytes32",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [],
@@ -181,11 +181,11 @@ export const registryAbi = [
       {
         internalType: "bytes32",
         name: "",
-        type: "bytes32"
-      }
+        type: "bytes32",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [],
@@ -194,11 +194,11 @@ export const registryAbi = [
       {
         internalType: "bytes32",
         name: "",
-        type: "bytes32"
-      }
+        type: "bytes32",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [],
@@ -207,34 +207,34 @@ export const registryAbi = [
       {
         internalType: "bytes32",
         name: "",
-        type: "bytes32"
-      }
+        type: "bytes32",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "string",
         name: "_name",
-        type: "string"
+        type: "string",
       },
       {
         internalType: "address",
         name: "_repo",
-        type: "address"
+        type: "address",
       },
       {
         internalType: "uint8",
         name: "flags",
-        type: "uint8"
-      }
+        type: "uint8",
+      },
     ],
     name: "addPackage",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [],
@@ -243,11 +243,11 @@ export const registryAbi = [
       {
         internalType: "bool",
         name: "",
-        type: "bool"
-      }
+        type: "bool",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [],
@@ -256,19 +256,19 @@ export const registryAbi = [
       {
         internalType: "uint64",
         name: "",
-        type: "uint64"
-      }
+        type: "uint64",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "string",
         name: "_name",
-        type: "string"
-      }
+        type: "string",
+      },
     ],
     name: "getPackage",
     outputs: [
@@ -277,26 +277,26 @@ export const registryAbi = [
           {
             internalType: "uint8",
             name: "flags",
-            type: "uint8"
+            type: "uint8",
           },
           {
             internalType: "address",
             name: "repo",
-            type: "address"
+            type: "address",
           },
           {
             internalType: "string",
             name: "name",
-            type: "string"
-          }
+            type: "string",
+          },
         ],
         internalType: "struct Registry.Package",
         name: "",
-        type: "tuple"
-      }
+        type: "tuple",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [],
@@ -305,221 +305,221 @@ export const registryAbi = [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256"
-      }
+        type: "uint256",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "string",
         name: "_name",
-        type: "string"
-      }
+        type: "string",
+      },
     ],
     name: "getPackageIdx",
     outputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256"
-      }
+        type: "uint256",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "bytes32",
         name: "role",
-        type: "bytes32"
-      }
+        type: "bytes32",
+      },
     ],
     name: "getRoleAdmin",
     outputs: [
       {
         internalType: "bytes32",
         name: "",
-        type: "bytes32"
-      }
+        type: "bytes32",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "bytes32",
         name: "role",
-        type: "bytes32"
+        type: "bytes32",
       },
       {
         internalType: "uint256",
         name: "index",
-        type: "uint256"
-      }
+        type: "uint256",
+      },
     ],
     name: "getRoleMember",
     outputs: [
       {
         internalType: "address",
         name: "",
-        type: "address"
-      }
+        type: "address",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "bytes32",
         name: "role",
-        type: "bytes32"
-      }
+        type: "bytes32",
+      },
     ],
     name: "getRoleMemberCount",
     outputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256"
-      }
+        type: "uint256",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "bytes32",
         name: "role",
-        type: "bytes32"
+        type: "bytes32",
       },
       {
         internalType: "address",
         name: "account",
-        type: "address"
-      }
+        type: "address",
+      },
     ],
     name: "grantRole",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "bytes32",
         name: "role",
-        type: "bytes32"
+        type: "bytes32",
       },
       {
         internalType: "address",
         name: "account",
-        type: "address"
-      }
+        type: "address",
+      },
     ],
     name: "hasRole",
     outputs: [
       {
         internalType: "bool",
         name: "",
-        type: "bool"
-      }
+        type: "bool",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "string",
         name: "_name",
-        type: "string"
+        type: "string",
       },
       {
         internalType: "address",
         name: "_dev",
-        type: "address"
+        type: "address",
       },
       {
         internalType: "uint8",
         name: "_flags",
-        type: "uint8"
-      }
+        type: "uint8",
+      },
     ],
     name: "newPackage",
     outputs: [
       {
         internalType: "contract Repo",
         name: "",
-        type: "address"
-      }
+        type: "address",
+      },
     ],
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "string",
         name: "_name",
-        type: "string"
+        type: "string",
       },
       {
         internalType: "address",
         name: "_dev",
-        type: "address"
+        type: "address",
       },
       {
         internalType: "uint8",
         name: "flags",
-        type: "uint8"
+        type: "uint8",
       },
       {
         internalType: "string",
         name: "_version",
-        type: "string"
+        type: "string",
       },
       {
         internalType: "string",
         name: "_contentURI",
-        type: "string"
-      }
+        type: "string",
+      },
     ],
     name: "newPackageWithVersion",
     outputs: [
       {
         internalType: "contract Repo",
         name: "",
-        type: "address"
-      }
+        type: "address",
+      },
     ],
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "bytes32",
         name: "",
-        type: "bytes32"
-      }
+        type: "bytes32",
+      },
     ],
     name: "packageIdxByName",
     outputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256"
-      }
+        type: "uint256",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [],
@@ -528,40 +528,40 @@ export const registryAbi = [
       {
         internalType: "bytes",
         name: "",
-        type: "bytes"
-      }
+        type: "bytes",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256"
-      }
+        type: "uint256",
+      },
     ],
     name: "packages",
     outputs: [
       {
         internalType: "uint8",
         name: "flags",
-        type: "uint8"
+        type: "uint8",
       },
       {
         internalType: "address",
         name: "repo",
-        type: "address"
+        type: "address",
       },
       {
         internalType: "string",
         name: "name",
-        type: "string"
-      }
+        type: "string",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [],
@@ -570,29 +570,29 @@ export const registryAbi = [
       {
         internalType: "string",
         name: "",
-        type: "string"
-      }
+        type: "string",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "bytes32",
         name: "role",
-        type: "bytes32"
+        type: "bytes32",
       },
       {
         internalType: "address",
         name: "account",
-        type: "address"
-      }
+        type: "address",
+      },
     ],
     name: "renounceRole",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [],
@@ -601,114 +601,114 @@ export const registryAbi = [
       {
         internalType: "address",
         name: "",
-        type: "address"
-      }
+        type: "address",
+      },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "bytes32",
         name: "role",
-        type: "bytes32"
+        type: "bytes32",
       },
       {
         internalType: "address",
         name: "account",
-        type: "address"
-      }
+        type: "address",
+      },
     ],
     name: "revokeRole",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "bool",
         name: "_addPackageAnyAddress",
-        type: "bool"
-      }
+        type: "bool",
+      },
     ],
     name: "setAddPackageAnyAddress",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "bytes",
         name: "_packageList",
-        type: "bytes"
+        type: "bytes",
       },
       {
         internalType: "uint64",
         name: "_bytesPerListItem",
-        type: "uint64"
-      }
+        type: "uint64",
+      },
     ],
     name: "setList",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "packageIdx",
-        type: "uint256"
+        type: "uint256",
       },
       {
         internalType: "address",
         name: "repo",
-        type: "address"
-      }
+        type: "address",
+      },
     ],
     name: "setPackageRepo",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "packageIdx",
-        type: "uint256"
+        type: "uint256",
       },
       {
         internalType: "uint8",
         name: "flags",
-        type: "uint8"
-      }
+        type: "uint8",
+      },
     ],
     name: "setPackageStatus",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "bytes4",
         name: "interfaceId",
-        type: "bytes4"
-      }
+        type: "bytes4",
+      },
     ],
     name: "supportsInterface",
     outputs: [
       {
         internalType: "bool",
         name: "",
-        type: "bool"
-      }
+        type: "bool",
+      },
     ],
     stateMutability: "view",
-    type: "function"
-  }
+    type: "function",
+  },
 ];
