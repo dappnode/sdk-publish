@@ -1,11 +1,11 @@
 import { signatureFileName } from "params";
-import { parseIpfsPath } from "./isIpfsHash";
+import { normalizeIpfsPath } from "./isIpfsHash";
 
 export async function fetchReleaseSignature(
   hash: string,
   IPFS_GATEWAY: string
 ): Promise<string> {
-  hash = parseIpfsPath(hash);
+  hash = normalizeIpfsPath(hash);
 
   const res = await fetch(`${IPFS_GATEWAY}/ipfs/${hash}/${signatureFileName}`);
 

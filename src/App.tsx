@@ -28,10 +28,21 @@ import {
 } from "./settings";
 // Imgs
 import metamaskIcon from "./img/metamask-white.png";
-import { RequestStatus, RepoAddresses, Manifest, FormField } from "types";
-import { IPFS_GATEWAY, SDK_INSTALL_URL } from "params";
+import {
+  RequestStatus,
+  RepoAddresses,
+  Manifest,
+  FormField,
+  NetworkId,
+} from "types";
+import {
+  dappnodeKnownDpmRegistries,
+  IPFS_GATEWAY,
+  SDK_INSTALL_URL,
+} from "params";
 import { signRelease } from "utils/signRelease";
 import { fetchReleaseSignature } from "utils/fetchRelease";
+import { publishXDaiTx } from "utils/dpm/publishXDAITx";
 
 const fetchManifestMem = memoizee(fetchManifest, { promise: true });
 const resolveDnpNameMem = memoizee(resolveDnpName, { promise: true });
@@ -82,6 +93,12 @@ export function App() {
   useEffect(() => {
     const urlParams = parseUrlQuery(window.location.search);
     console.log("URL params", urlParams);
+    // r: **repo** human readable ENS dnpName: 'geth.dnp.dappnode.eth'
+    // v: **version** semver version: '0.5.6'
+    // d: **developer address** for new Repo only, address that will control the package: '0xf35960302a07022aba880dffaec2fdd64d5bf1c1'
+    // h: **contentURI** hash for the package:
+    //    - APM: '/ipfs/QmdjrkKfD8ZAA8zHBAFC9y162R52qKcikuVXDNMKMhEsUr'
+    //    - DPM: 'ipfs://QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD'
     if (urlParams.r) setDnpName(urlParams.r);
     if (urlParams.v) setVersion(urlParams.v);
     if (urlParams.d) setDeveloperAddress(urlParams.d);
@@ -186,7 +203,7 @@ export function App() {
     }
   }
 
-  async function publish() {
+  async function publishMainnet() {
     try {
       if (!dnpName) throw Error("Must provide a dnpName");
       if (!version) throw Error("Must provide a version");
@@ -197,7 +214,7 @@ export function App() {
       if (!provider) throw Error(`Must connect to Metamask first`);
       const network = await provider.getNetwork();
 
-      if (network && String(network.chainId) !== "1")
+      if (network && String(network.chainId) !== NetworkId.Mainnet)
         throw Error("Transactions must be published on Ethereum Mainnet");
 
       const accounts = await provider.listAccounts();
@@ -221,6 +238,29 @@ export function App() {
         { dnpName, version, manifestHash: releaseHash, developerAddress },
         provider
       );
+      setPublishReqStatus({ result: txHash });
+    } catch (e) {
+      console.error(e);
+      setPublishReqStatus({ error: e as Error });
+    }
+  }
+
+  async function publishXDAI() {
+    try {
+      if (!dnpName) throw Error("Must provide a dnpName");
+      if (!version) throw Error("Must provide a version");
+      if (!releaseHash) throw Error("Must provide a manifestHash");
+      if (!provider) throw Error(`Must connect to Metamask first`);
+
+      setPublishReqStatus({ loading: true });
+
+      const { txHash } = await publishXDaiTx(
+        { dnpName, version, releaseHash, developerAddress },
+        provider,
+        // TODO: Extend with user provided input
+        dappnodeKnownDpmRegistries
+      );
+
       setPublishReqStatus({ result: txHash });
     } catch (e) {
       console.error(e);
@@ -399,13 +439,22 @@ export function App() {
             {/* Publish button */}
             <div className="bottom-buttons">
               {provider ? (
-                <button
-                  className="btn btn-dappnode"
-                  disabled={publishReqStatus.loading}
-                  onClick={publish}
-                >
-                  Publish
-                </button>
+                <>
+                  <button
+                    className="btn btn-dappnode"
+                    disabled={publishReqStatus.loading}
+                    onClick={publishMainnet}
+                  >
+                    Publish mainnet
+                  </button>
+                  <button
+                    className="btn btn-dappnode"
+                    disabled={publishReqStatus.loading}
+                    onClick={publishXDAI}
+                  >
+                    Publish xDAI
+                  </button>
+                </>
               ) : (
                 <button
                   className="btn btn-dappnode"
