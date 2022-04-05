@@ -29,8 +29,7 @@ export async function executeDpmPublishTx(
   // Compute tx data
   // contentURI in ENSIP-7 format
   const ipfsHash = normalizeIpfsPath(manifestHash);
-  const contentURIStr = "ipfs://" + ipfsHash;
-  const contentURI = "0x" + Buffer.from(contentURIStr, "utf8").toString("hex");
+  const contentURI = "ipfs://" + ipfsHash;
 
   let unsignedTx: ethers.PopulatedTransaction;
   // If repository exists, push new version to it
