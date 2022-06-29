@@ -5,7 +5,7 @@ import { base64, base64url } from "multiformats/bases/base64";
 import { ethers } from "ethers";
 import sortBy from "lodash/sortBy";
 import { signatureFileName } from "params";
-import { parseIpfsPath } from "./isIpfsHash";
+import { normalizeIpfsPath } from "./isIpfsHash";
 
 export async function signRelease(
   releaseHash: string,
@@ -19,7 +19,7 @@ export async function signRelease(
   const [ipfs, ...ipfsExtras] = ipfsArr;
 
   // Format release hash, remove prefix
-  const releaseCID = CID.parse(parseIpfsPath(releaseHash));
+  const releaseCID = CID.parse(normalizeIpfsPath(releaseHash));
 
   const releaseRootDag: IpfsDagGetResult<IpfsDagPbValue> = await ipfs.dag.get(
     releaseCID
@@ -209,7 +209,7 @@ function dagGetToFiles(
   content: IpfsDagGetResult<IpfsDagPbValue>
 ): { name: string; cid: CID }[] {
   return content.value.Links.map((link) => ({
-    cid: CID.parse(parseIpfsPath(link.Hash.toString())),
+    cid: CID.parse(normalizeIpfsPath(link.Hash.toString())),
     name: link.Name,
   }));
 }
