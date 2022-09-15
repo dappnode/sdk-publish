@@ -21,11 +21,7 @@ import { isValidBump } from "utils/isValidBump";
 import { isIpfsHash } from "utils/isIpfsHash";
 import { isValidEns } from "utils/isValidEns";
 import { newTabProps } from "utils/newTabProps";
-import {
-  parseIpfsApiUrls,
-  readIpfsApiUrls,
-  writeIpfsApiUrls,
-} from "./settings";
+import { parseIpfsApiUrls, readIpfsApiUrls, writeIpfsApiUrls } from "./settings";
 // Imgs
 import metamaskIcon from "./img/metamask-white.png";
 import { RequestStatus, RepoAddresses, Manifest, FormField } from "types";
@@ -40,13 +36,8 @@ const getLatestVersionMem = memoizee(getLatestVersion, { promise: true });
 /**
  * Convert to react-boostrap classes
  */
-const getInputClass = ({
-  success,
-  error,
-}: {
-  success?: boolean;
-  error?: boolean;
-}) => (error ? "is-invalid" : success ? "is-valid" : "");
+const getInputClass = ({ success, error }: { success?: boolean; error?: boolean }) =>
+  error ? "is-invalid" : success ? "is-valid" : "";
 
 export function App() {
   // Settings
@@ -61,13 +52,9 @@ export function App() {
   const [isSigned, setIsSigned] = useState<boolean | null>(null);
   const [repoAddresses, setRepoAddresses] = useState<RepoAddresses>();
   const [latestVersion, setLatestVersion] = useState<string>();
-  const [providerReq, setProviderReq] = useState<
-    RequestStatus<ethers.providers.Web3Provider>
-  >({});
+  const [providerReq, setProviderReq] = useState<RequestStatus<ethers.providers.Web3Provider>>({});
   const [signReq, setSignReq] = useState<RequestStatus<string>>({});
-  const [publishReqStatus, setPublishReqStatus] = useState<
-    RequestStatus<string>
-  >({});
+  const [publishReqStatus, setPublishReqStatus] = useState<RequestStatus<string>>({});
 
   // Precomputed variables
   const provider = providerReq.result;
@@ -136,8 +123,7 @@ export function App() {
   }, [releaseHash, onNewManifestHash]);
 
   useEffect(() => {
-    if (dnpName && isValidEns(dnpName) && provider)
-      onNewDnpName(dnpName, provider);
+    if (dnpName && isValidEns(dnpName) && provider) onNewDnpName(dnpName, provider);
   }, [dnpName, provider, onNewDnpName]);
 
   async function connectToMetamask() {
@@ -155,9 +141,7 @@ export function App() {
       // Legacy dapp browsers...
       else if (window.web3) {
         setProviderReq({
-          result: new ethers.providers.Web3Provider(
-            window.web3.currentProvider
-          ),
+          result: new ethers.providers.Web3Provider(window.web3.currentProvider),
         });
       }
       // Non-dapp browsers...
@@ -174,10 +158,7 @@ export function App() {
     try {
       setSignReq({ loading: true });
       // newReleaseHash is not prefixed by '/ipfs/'
-      const newReleaseHash = await signRelease(
-        releaseHash,
-        parseIpfsApiUrls(ipfsApiUrls)
-      );
+      const newReleaseHash = await signRelease(releaseHash, parseIpfsApiUrls(ipfsApiUrls));
       setSignReq({ result: newReleaseHash });
       setReleaseHash(`/ipfs/${newReleaseHash}`);
     } catch (e) {
@@ -197,23 +178,15 @@ export function App() {
       if (!provider) throw Error(`Must connect to Metamask first`);
       const network = await provider.getNetwork();
 
-      if (network && String(network.chainId) !== "1")
-        throw Error("Transactions must be published on Ethereum Mainnet");
+      if (network && String(network.chainId) !== "1") throw Error("Transactions must be published on Ethereum Mainnet");
 
       const accounts = await provider.listAccounts();
       const userAddress = accounts[0];
       if (userAddress) {
         const { repoAddress } = await resolveDnpNameMem(dnpName, provider);
         if (repoAddress) {
-          const isAllowed = await apmRepoIsAllowed(
-            repoAddress,
-            userAddress,
-            provider
-          );
-          if (!isAllowed)
-            throw Error(
-              `Selected address ${userAddress} is not allowed to publish`
-            );
+          const isAllowed = await apmRepoIsAllowed(repoAddress, userAddress, provider);
+          if (!isAllowed) throw Error(`Selected address ${userAddress} is not allowed to publish`);
         }
       }
 
@@ -311,11 +284,7 @@ export function App() {
             ? { isValid: true, message: "Valid ipfs hash" }
             : { isValid: false, message: "Invalid ipfs hash" }
           : null,
-        manifest &&
-        releaseHash &&
-        releaseHash === manifest.hash &&
-        manifest.name &&
-        manifest.version
+        manifest && releaseHash && releaseHash === manifest.hash && manifest.name && manifest.version
           ? manifest.name === dnpName && manifest.version === version
             ? { isValid: true, message: "Manifest successfully verified" }
             : {
@@ -337,18 +306,12 @@ export function App() {
       <Title title="SDK" subtitle="Publish" />
       <div className="mt-3 text-muted">
         <p>
-          This tool is part of the DAppNode Software Development Kit
-          (dappnodesdk) and allows to sign DAppNode package release transactions
-          with Metamask.
+          This tool is part of the DAppNode Software Development Kit (dappnodesdk) and allows to sign DAppNode package
+          release transactions with Metamask.
         </p>
         {!window.location.search && (
-          <div
-            className="alert alert-secondary"
-            role="alert"
-            style={{ backgroundColor: "#f1f1f3" }}
-          >
-            To generate a pre-filled URL with the parameters to publish a
-            release transaction install{" "}
+          <div className="alert alert-secondary" role="alert" style={{ backgroundColor: "#f1f1f3" }}>
+            To generate a pre-filled URL with the parameters to publish a release transaction install{" "}
             <a href={SDK_INSTALL_URL} {...newTabProps}>
               <code>@dappnode/dappnodesdk</code>
             </a>
@@ -385,9 +348,7 @@ export function App() {
                       <div>{item.message}</div>
                     </div>
                   ))}
-                  <small className="form-text text-muted help">
-                    {field.help}
-                  </small>
+                  <small className="form-text text-muted help">{field.help}</small>
                 </div>
               </React.Fragment>
             );
@@ -399,21 +360,12 @@ export function App() {
             {/* Publish button */}
             <div className="bottom-buttons">
               {provider ? (
-                <button
-                  className="btn btn-dappnode"
-                  disabled={publishReqStatus.loading}
-                  onClick={publish}
-                >
+                <button className="btn btn-dappnode" disabled={publishReqStatus.loading} onClick={publish}>
                   Publish
                 </button>
               ) : (
-                <button
-                  className="btn btn-dappnode"
-                  disabled={providerReq.loading}
-                  onClick={connectToMetamask}
-                >
-                  <img src={metamaskIcon} alt="" className="metamaskIcon" />{" "}
-                  Connect to Metamask
+                <button className="btn btn-dappnode" disabled={providerReq.loading} onClick={connectToMetamask}>
+                  <img src={metamaskIcon} alt="" className="metamaskIcon" /> Connect to Metamask
                 </button>
               )}
               {providerReq.result && (
@@ -428,21 +380,13 @@ export function App() {
             </div>
 
             {providerReq.error && <ErrorView error={providerReq.error} />}
-            {providerReq.loading && (
-              <LoadingView steps={["Connecting to Metamask"]} />
-            )}
+            {providerReq.loading && <LoadingView steps={["Connecting to Metamask"]} />}
             {signReq.error && <ErrorView error={signReq.error} />}
             {signReq.loading && <LoadingView steps={["Signing release"]} />}
-            {publishReqStatus.error && (
-              <ErrorView error={publishReqStatus.error} />
-            )}
-            {publishReqStatus.loading && (
-              <LoadingView steps={["Publishing release transaction"]} />
-            )}
+            {publishReqStatus.error && <ErrorView error={publishReqStatus.error} />}
+            {publishReqStatus.loading && <LoadingView steps={["Publishing release transaction"]} />}
             {publishReqStatus.result && (
-              <div className="feedback-success">
-                Published transaction! Tx hash: {publishReqStatus.result}
-              </div>
+              <div className="feedback-success">Published transaction! Tx hash: {publishReqStatus.result}</div>
             )}
           </div>
         </div>
@@ -453,13 +397,10 @@ export function App() {
           <SubTitle>Settings</SubTitle>
           <Card>
             <div className="field-name">IPFS API URLs</div>
-            <p className="text-muted">
-              You can specify multiple URLs, to facilitate propagation of the
-              signed release
-            </p>
+            <p className="text-muted">You can specify multiple URLs, to facilitate propagation of the signed release</p>
             <textarea
               className={"form-control"}
-              placeholder="https://ipfs.infura.io:5001 &#13;&#10;http://your-own-ipfs-node:5001"
+              placeholder="https://infura-ipfs.io:5001 &#13;&#10;http://your-own-ipfs-node:5001"
               value={ipfsApiUrls}
               onChange={(e) => setIpfsApiUrls(e.target.value)}
             />
@@ -467,10 +408,7 @@ export function App() {
         </>
       ) : (
         <div className="settings-container">
-          <span
-            className="show-settings text-muted"
-            onClick={() => setShowSettings(true)}
-          >
+          <span className="show-settings text-muted" onClick={() => setShowSettings(true)}>
             Edit settings
           </span>
         </div>
