@@ -15,13 +15,13 @@ export async function executePublishTx(
     manifestHash: string;
     developerAddress?: string;
   },
-  provider: ethers.providers.Web3Provider
+  provider: ethers.BrowserProvider
 ) {
   if (!dnpName) throw Error("dnpName must be defined");
   if (!version) throw Error("version must be defined");
   if (!manifestHash) throw Error("manifestHash must be defined");
 
-  const signer = provider.getSigner();
+  const signer = await provider.getSigner();
   const { registryAddress, repoAddress } = await resolveDnpName(
     dnpName,
     provider
@@ -33,7 +33,7 @@ export async function executePublishTx(
   const contractAddress = "0x0000000000000000000000000000000000000000";
   const shortName = dnpName.split(".")[0];
 
-  let unsignedTx: ethers.PopulatedTransaction;
+  let unsignedTx: ethers.TransactionReceipt;
   // If repository exists, push new version to it
   if (repoAddress) {
     // newVersion(
@@ -42,7 +42,7 @@ export async function executePublishTx(
     //     bytes _contentURI
     // )
     const repo = new ethers.Contract(repoAddress, repoContract.abi, signer);
-    unsignedTx = await repo.populateTransaction.newVersion(
+    unsignedTx = await repo.newVersion(
       version.split("."), // uint16[3] _newSemanticVersion
       contractAddress, // address _contractAddress
       contentURI // bytes _contentURI
@@ -70,7 +70,7 @@ export async function executePublishTx(
       registryContract.abi,
       signer
     );
-    unsignedTx = await registry.populateTransaction.newRepoWithVersion(
+    unsignedTx = await registry.newRepoWithVersion(
       shortName, // string _name
       developerAddress, // address _dev
       version.split("."), // uint16[3] _initialSemanticVersion

@@ -4,7 +4,7 @@ import repoContract from "contracts/repository.json";
 export async function apmRepoIsAllowed(
   repoAddress: string,
   userAddress: string,
-  provider: ethers.providers.Provider
+  provider: ethers.Provider
 ): Promise<boolean> {
   const repo = new ethers.Contract(repoAddress, repoContract.abi, provider);
 
