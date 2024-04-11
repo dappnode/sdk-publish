@@ -57,6 +57,7 @@ export function App() {
   const [version, setVersion] = useState("");
   const [developerAddress, setDeveloperAddress] = useState("");
   const [releaseHash, setReleaseHash] = useState("");
+  const [signedReleaseHash, setSignedReleaseHash] = useState("");
   const [manifest, setManifest] = useState<Manifest & { hash: string }>();
   const [isSigned, setIsSigned] = useState<boolean | null>(null);
   const [repoAddresses, setRepoAddresses] = useState<RepoAddresses>();
@@ -132,8 +133,8 @@ export function App() {
   );
 
   useEffect(() => {
-    if (releaseHash) onNewManifestHash(releaseHash);
-  }, [releaseHash, onNewManifestHash]);
+    if (signedReleaseHash) onNewManifestHash(signedReleaseHash);
+  }, [signedReleaseHash]);
 
   useEffect(() => {
     if (dnpName && isValidEns(dnpName) && provider)
@@ -177,7 +178,7 @@ export function App() {
         parseIpfsApiUrls(ipfsApiUrls)
       );
       setSignReq({ result: newReleaseHash });
-      setReleaseHash(`/ipfs/${newReleaseHash}`);
+      setSignedReleaseHash(`/ipfs/${newReleaseHash}`);
     } catch (e) {
       console.error(e);
       setSignReq({ error: e as Error });
@@ -188,7 +189,7 @@ export function App() {
     try {
       if (!dnpName) throw Error("Must provide a dnpName");
       if (!version) throw Error("Must provide a version");
-      if (!releaseHash) throw Error("Must provide a manifestHash");
+      if (!signedReleaseHash) throw Error("Must provide a manifestHash");
 
       setPublishReqStatus({ loading: true });
 
@@ -216,7 +217,7 @@ export function App() {
       }
 
       const txHash = await executePublishTx(
-        { dnpName, version, manifestHash: releaseHash, developerAddress },
+        { dnpName, version, manifestHash: signedReleaseHash, developerAddress },
         provider
       );
       setPublishReqStatus({ result: txHash });
@@ -321,6 +322,16 @@ export function App() {
                 message: `Manifest verification failed. This manifest is for ${manifest.name} @ ${manifest.version}`,
               }
           : null,
+      ],
+    },
+    {
+      id: "signedReleaseIpfsHash",
+      name: "Signed Release hash",
+      placeholder: "Signed IPFS multihash",
+      help: "IPFS hash of the signed release. In format /ipfs/[multihash], i.e. /ipfs/QmVeaz5kR55nAiGjYpXpUAJpWvf6net4MbGFNjBfMTS8xS",
+      value: signedReleaseHash,
+      onValueChange: setSignedReleaseHash,
+      validations: [
         isSigned === true
           ? { isValid: true, message: "Release is signed" }
           : isSigned === false
@@ -372,6 +383,7 @@ export function App() {
                     placeholder={field.placeholder}
                     value={field.value}
                     onChange={(e) => field.onValueChange(e.target.value)}
+                    disabled={field.id === `signedReleaseIpfsHash`}
                   />
                   {success.map((item, i) => (
                     <div key={i} className="valid-feedback">
