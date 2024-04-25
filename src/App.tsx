@@ -56,8 +56,14 @@ export function App() {
   const [dnpName, setDnpName] = useState("");
   const [version, setVersion] = useState("");
   const [developerAddress, setDeveloperAddress] = useState("");
+  const [metamaskAddress, setMetamaskAddress] = useState("");
+  const [isAllowedAddress, setIsAllowedAddress] = useState<boolean | null>(
+    null
+  );
   const [releaseHash, setReleaseHash] = useState("");
-  const [signedReleaseHash, setSignedReleaseHash] = useState("");
+  const [signedReleaseHash, setSignedReleaseHash] = useState<string | null>(
+    null
+  );
   const [manifest, setManifest] = useState<Manifest & { hash: string }>();
   const [isSigned, setIsSigned] = useState<boolean | null>(null);
   const [repoAddresses, setRepoAddresses] = useState<RepoAddresses>();
@@ -89,6 +95,17 @@ export function App() {
     if (urlParams.h) setReleaseHash(urlParams.h);
   }, []);
 
+  //Sets the address when connecting to metamask and publishing
+  useEffect(() => {
+    async function setAccount() {
+      if (provider) {
+        const accounts = await provider.listAccounts();
+        setMetamaskAddress(accounts[0].address);
+      }
+    }
+    setAccount();
+  }, [providerReq, publishReqStatus]);
+
   useEffect(() => {
     // Necessary code to refresh the userAddress
     // when user interacts with the metamask extension
@@ -97,6 +114,7 @@ export function App() {
     if (ethereum)
       ethereum.on("accountsChanged", (accounts: string[]) => {
         console.log("new user account", accounts[0]);
+        setMetamaskAddress(accounts[0]);
       });
   }, []);
 
@@ -104,17 +122,18 @@ export function App() {
 
   const onNewManifestHash = useMemo(
     () =>
-      debounce((hash: string) => {
+      debounce(async (hash: string) => {
         fetchManifestMem(hash, IPFS_GATEWAY)
           .then((manifest) => setManifest({ ...manifest, hash }))
           .catch((e) => console.error(`Error fetching manifest ${hash}`, e));
 
-        fetchReleaseSignature(hash, IPFS_GATEWAY)
-          .then(() => setIsSigned(true))
-          .catch((e) => {
-            console.error(`Error fetching release ${hash}`, e);
-            setIsSigned(false);
-          });
+        try {
+          await fetchReleaseSignature(hash, IPFS_GATEWAY);
+          setIsSigned(true);
+        } catch (e) {
+          console.error(`Error fetching release ${hash}`, e);
+          setIsSigned(false);
+        }
       }, 500),
     []
   );
@@ -134,12 +153,29 @@ export function App() {
 
   useEffect(() => {
     if (signedReleaseHash) onNewManifestHash(signedReleaseHash);
-  }, [signedReleaseHash]);
+  }, [signedReleaseHash, onNewManifestHash]);
 
   useEffect(() => {
     if (dnpName && isValidEns(dnpName) && provider)
       onNewDnpName(dnpName, provider);
   }, [dnpName, provider, onNewDnpName]);
+
+  useEffect(() => {
+    if (dnpName && metamaskAddress && provider) {
+      (async () => {
+        if (!provider) throw Error(`Must connect to Metamask first`);
+
+        if (metamaskAddress) {
+          const { repoAddress } = await resolveDnpNameMem(dnpName, provider);
+          if (repoAddress) {
+            setIsAllowedAddress(
+              await apmRepoIsAllowed(repoAddress, metamaskAddress, provider)
+            );
+          }
+        }
+      })();
+    }
+  }, [metamaskAddress]);
 
   async function connectToMetamask() {
     try {
@@ -199,19 +235,16 @@ export function App() {
       if (network && String(network.chainId) !== "1")
         throw Error("Transactions must be published on Ethereum Mainnet");
 
-      const accounts = await provider.listAccounts();
-      const userAddress = accounts[0].address;
-      if (userAddress) {
+      if (metamaskAddress) {
         const { repoAddress } = await resolveDnpNameMem(dnpName, provider);
         if (repoAddress) {
-          const isAllowed = await apmRepoIsAllowed(
-            repoAddress,
-            userAddress,
-            provider
+          setIsAllowedAddress(
+            await apmRepoIsAllowed(repoAddress, metamaskAddress, provider)
           );
-          if (!isAllowed)
+          console.log(isAllowedAddress);
+          if (!isAllowedAddress)
             throw Error(
-              `Selected address ${userAddress} is not allowed to publish`
+              `Selected address ${metamaskAddress} is not allowed to publish`
             );
         }
       }
@@ -364,6 +397,7 @@ export function App() {
           </div>
         )}
       </div>
+
       <SubTitle>Transaction details</SubTitle>
       <Card>
         <div className="publish-grid">
@@ -383,7 +417,7 @@ export function App() {
                     placeholder={field.placeholder}
                     value={field.value}
                     onChange={(e) => field.onValueChange(e.target.value)}
-                    disabled={field.id === `signedReleaseIpfsHash`}
+                    //disabled={field.id === `signedReleaseIpfsHash`}
                   />
                   {success.map((item, i) => (
                     <div key={i} className="valid-feedback">
@@ -407,11 +441,20 @@ export function App() {
           <div />
           <div className="bottom-section">
             {/* Publish button */}
+            {isSigned && !isAllowedAddress && (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <p>
+                  To publish the package you need an allowed Address! <br />
+                  Your current metamask addres is: {metamaskAddress}
+                </p>
+              </div>
+            )}
+
             <div className="bottom-buttons">
               {provider ? (
                 <button
                   className="btn btn-dappnode"
-                  disabled={publishReqStatus.loading}
+                  disabled={publishReqStatus.loading || !isAllowedAddress}
                   onClick={publish}
                 >
                   Publish
