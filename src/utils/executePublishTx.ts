@@ -28,12 +28,17 @@ export async function executePublishTx(
   );
 
   // Compute tx data
-  const contentURI = "0x" + Buffer.from(manifestHash, "utf8").toString("hex");
-  // @param _contractAddress address for smart contract logic for version (if set to 0, it uses last versions' contractAddress)
+  const encoder = new TextEncoder();
+  const encoded = encoder.encode(manifestHash); // Convert the string to a Uint8Array of UTF-8 encoded bytes
+  const hexString = Array.from(encoded)
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join(""); // Convert each byte to a hex string and concatenate them
+  const contentURI = "0x" + hexString;
+
   const contractAddress = "0x0000000000000000000000000000000000000000";
   const shortName = dnpName.split(".")[0];
 
-  let unsignedTx: ethers.TransactionReceipt;
+  let unsignedTx: ethers.TransactionRequest;
   // If repository exists, push new version to it
   if (repoAddress) {
     // newVersion(
@@ -42,11 +47,15 @@ export async function executePublishTx(
     //     bytes _contentURI
     // )
     const repo = new ethers.Contract(repoAddress, repoContract.abi, signer);
-    unsignedTx = await repo.newVersion(
-      version.split("."), // uint16[3] _newSemanticVersion
-      contractAddress, // address _contractAddress
-      contentURI // bytes _contentURI
-    );
+    unsignedTx = {
+      to: repoAddress,
+      data: repo.interface.encodeFunctionData("newVersion", [
+        version.split("."),
+        contractAddress,
+        contentURI,
+      ]),
+      // Don't specify gas parameters
+    };
   }
   // If repo does not exist, create a new repo and push version
   else {
