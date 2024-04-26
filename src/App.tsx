@@ -104,6 +104,7 @@ export function App() {
       }
     }
     setAccount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [providerReq, publishReqStatus]);
 
   useEffect(() => {
@@ -175,6 +176,7 @@ export function App() {
         }
       })();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metamaskAddress]);
 
   async function connectToMetamask() {
