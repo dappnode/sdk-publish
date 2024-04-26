@@ -241,7 +241,6 @@ export function App() {
           setIsAllowedAddress(
             await apmRepoIsAllowed(repoAddress, metamaskAddress, provider)
           );
-          console.log(isAllowedAddress);
           if (!isAllowedAddress)
             throw Error(
               `Selected address ${metamaskAddress} is not allowed to publish`
@@ -417,7 +416,7 @@ export function App() {
                     placeholder={field.placeholder}
                     value={field.value}
                     onChange={(e) => field.onValueChange(e.target.value)}
-                    //disabled={field.id === `signedReleaseIpfsHash`}
+                    disabled={field.id === `signedReleaseIpfsHash`}
                   />
                   {success.map((item, i) => (
                     <div key={i} className="valid-feedback">
@@ -441,7 +440,7 @@ export function App() {
           <div />
           <div className="bottom-section">
             {/* Publish button */}
-            {isSigned && !isAllowedAddress && (
+            {isSigned && !isAllowedAddress && repoAddresses === undefined && (
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <p>
                   To publish the package you need an allowed Address! <br />
@@ -454,7 +453,10 @@ export function App() {
               {provider ? (
                 <button
                   className="btn btn-dappnode"
-                  disabled={publishReqStatus.loading || !isAllowedAddress}
+                  disabled={
+                    publishReqStatus.loading ||
+                    (!isAllowedAddress && repoAddresses === undefined)
+                  }
                   onClick={publish}
                 >
                   Publish

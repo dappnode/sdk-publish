@@ -86,6 +86,16 @@ export async function executePublishTx(
       contractAddress, // address _contractAddress
       contentURI // bytes _contentURI
     );
+    unsignedTx = {
+      to: registryAddress,
+      data: registry.interface.encodeFunctionData("newRepoWithVersion", [
+        shortName, // string _name
+        developerAddress, // address _dev
+        version.split("."), // uint16[3] _initialSemanticVersion
+        contractAddress, // address _contractAddress
+        contentURI, // bytes _contentURI
+      ]),
+    };
   }
 
   const txResponse = await signer.sendTransaction(unsignedTx);
