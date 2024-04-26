@@ -442,14 +442,16 @@ export function App() {
           <div />
           <div className="bottom-section">
             {/* Publish button */}
-            {isSigned && !isAllowedAddress && repoAddresses === undefined && (
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <p>
-                  To publish the package you need an allowed Address! <br />
-                  Your current metamask addres is: {metamaskAddress}
-                </p>
-              </div>
-            )}
+            {isSigned &&
+              !isAllowedAddress &&
+              repoAddresses?.repoAddress !== null && (
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <p>
+                    To publish the package you need an allowed Address! <br />
+                    Your current metamask addres is: {metamaskAddress}
+                  </p>
+                </div>
+              )}
 
             <div className="bottom-buttons">
               {provider ? (
@@ -457,7 +459,8 @@ export function App() {
                   className="btn btn-dappnode"
                   disabled={
                     publishReqStatus.loading ||
-                    (!isAllowedAddress && repoAddresses === undefined)
+                    !isSigned ||
+                    (!isAllowedAddress && repoAddresses?.repoAddress !== null)
                   }
                   onClick={publish}
                 >
