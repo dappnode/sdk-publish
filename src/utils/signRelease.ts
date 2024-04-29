@@ -34,12 +34,12 @@ export async function signRelease(
   const cidOpts: ReleaseSignature["cid"] = { version: 0, base: "base58btc" };
   const signedData = serializeIpfsDirectory(releaseFiles, cidOpts);
 
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const provider = new ethers.BrowserProvider(window.ethereum);
 
   // The Metamask plugin also allows signing transactions to
   // send ether and pay to change state within the blockchain.
   // For this, you need the account signer...
-  const signer = provider.getSigner();
+  const signer = await provider.getSigner();
 
   const flatSig = await signer.signMessage(signedData);
 
@@ -197,12 +197,6 @@ function cidToString(cid: CID, base: string): string {
     default:
       throw Error(`Unknown CID base ${base}`);
   }
-}
-
-interface IpfsDagGet {
-  Name: string;
-  Size: number;
-  Hash: string;
 }
 
 function dagGetToFiles(
