@@ -9,6 +9,9 @@ module.exports = {
         "default-purple": "#E9D0FF ",
         "focused-purple": "#C98DFF",
       },
+      fontFamily: {
+        modeG: ["Mode G", "sans-serif"],
+      },
     },
   },
   plugins: [],

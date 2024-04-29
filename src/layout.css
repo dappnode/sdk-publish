@@ -26,7 +26,7 @@
   TEXT STYLES 
 */
 body {
-  font-family: overpass, sans-serif !important;
+  font-family: "mode G", sans-serif !important;
 }
 
 /* Reset margins and underlying sizes. 
@@ -58,7 +58,6 @@ body {
   background-color: var(--color-background);
 }
 
-
 /*****
   MAIN
   ****
@@ -74,8 +73,6 @@ body {
 #main > div {
   margin-bottom: var(--default-spacing);
 }
-
-
 
 /********************
   Generic section
