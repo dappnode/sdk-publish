@@ -4,17 +4,17 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       # Install dependencies
       - run: yarn install
       # Build
       - run: yarn build
       # Deploy
       - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v1.1
+        uses: nwtgck/actions-netlify@v3
         with:
           publish-dir: "./build"
           production-branch: master
