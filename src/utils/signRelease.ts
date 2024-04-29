@@ -199,12 +199,6 @@ function cidToString(cid: CID, base: string): string {
   }
 }
 
-interface IpfsDagGet {
-  Name: string;
-  Size: number;
-  Hash: string;
-}
-
 function dagGetToFiles(
   content: IpfsDagGetResult<IpfsDagPbValue>
 ): { name: string; cid: CID }[] {
