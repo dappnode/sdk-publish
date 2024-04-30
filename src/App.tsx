@@ -56,13 +56,14 @@ export function App() {
   const [dnpName, setDnpName] = useState("");
   const [version, setVersion] = useState("");
   const [developerAddress, setDeveloperAddress] = useState("");
+
   const [metamaskAddress, setMetamaskAddress] = useState("");
   const [isAllowedAddress, setIsAllowedAddress] = useState<boolean | null>(
-    null
+    null,
   );
   const [releaseHash, setReleaseHash] = useState("");
   const [signedReleaseHash, setSignedReleaseHash] = useState<string | null>(
-    null
+    null,
   );
   const [manifest, setManifest] = useState<Manifest & { hash: string }>();
   const [isSigned, setIsSigned] = useState<boolean | null>(null);
@@ -136,7 +137,7 @@ export function App() {
           setIsSigned(false);
         }
       }, 500),
-    []
+    [],
   );
   const onNewDnpName = useMemo(
     () =>
@@ -149,7 +150,7 @@ export function App() {
           .then(setLatestVersion)
           .catch((e) => console.error(`Error get latest ver ${dnpName}`, e));
       }, 500),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -170,7 +171,7 @@ export function App() {
           const { repoAddress } = await resolveDnpNameMem(dnpName, provider);
           if (repoAddress) {
             setIsAllowedAddress(
-              await apmRepoIsAllowed(repoAddress, metamaskAddress, provider)
+              await apmRepoIsAllowed(repoAddress, metamaskAddress, provider),
             );
           }
         }
@@ -213,7 +214,7 @@ export function App() {
       // newReleaseHash is not prefixed by '/ipfs/'
       const newReleaseHash = await signRelease(
         releaseHash,
-        parseIpfsApiUrls(ipfsApiUrls)
+        parseIpfsApiUrls(ipfsApiUrls),
       );
       setSignReq({ result: newReleaseHash });
       setSignedReleaseHash(`/ipfs/${newReleaseHash}`);
@@ -241,18 +242,18 @@ export function App() {
         const { repoAddress } = await resolveDnpNameMem(dnpName, provider);
         if (repoAddress) {
           setIsAllowedAddress(
-            await apmRepoIsAllowed(repoAddress, metamaskAddress, provider)
+            await apmRepoIsAllowed(repoAddress, metamaskAddress, provider),
           );
           if (!isAllowedAddress)
             throw Error(
-              `Selected address ${metamaskAddress} is not allowed to publish`
+              `Selected address ${metamaskAddress} is not allowed to publish`,
             );
         }
       }
 
       const txHash = await executePublishTx(
         { dnpName, version, manifestHash: signedReleaseHash, developerAddress },
-        provider
+        provider,
       );
       setPublishReqStatus({ result: txHash });
     } catch (e) {
@@ -266,10 +267,10 @@ export function App() {
    */
   const fields: FormField[] = [
     {
-      id: "dnpName",
+      //id: "dnpName",
       name: "DAppNode Package name",
       placeholder: "full ENS name",
-      help: "ENS name of the DAppNode Package to update, i.e. timeapp.public.dappnode.eth",
+      //help: "ENS name of the DAppNode Package to update, i.e. timeapp.public.dappnode.eth",
       value: dnpName,
       onValueChange: setDnpName,
       validations: [
@@ -297,10 +298,10 @@ export function App() {
       ],
     },
     {
-      id: "developerAddress",
+      //id: "developerAddress",
       name: "Developer address",
       placeholder: "Ethereum address",
-      help: "Developer's Ethereum address that will control this repo",
+      //help: "Developer's Ethereum address that will control this repo",
       value: developerAddress,
       onValueChange: setDeveloperAddress,
       validations: [
@@ -312,10 +313,10 @@ export function App() {
       ],
     },
     {
-      id: "version",
+      //id: "version",
       name: "Next version",
       placeholder: "Semantic version",
-      help: "Semantic version about to be published, i.e. 0.1.7",
+      //help: "Semantic version about to be published, i.e. 0.1.7",
       value: version,
       onValueChange: setVersion,
       validations: [
@@ -332,10 +333,10 @@ export function App() {
       ],
     },
     {
-      id: "releaseIpfsHash",
+      //id: "releaseIpfsHash",
       name: "Release hash",
       placeholder: "IPFS multihash",
-      help: "IPFS hash of the release. Must be in the format /ipfs/[multihash], i.e. /ipfs/QmVeaz5kR55nAiGjYpXpUAJpWvf6net4MbGFNjBfMTS8xS",
+      //help: "IPFS hash of the release. Must be in the format /ipfs/[multihash], i.e. /ipfs/QmVeaz5kR55nAiGjYpXpUAJpWvf6net4MbGFNjBfMTS8xS",
       value: releaseHash,
       onValueChange: setReleaseHash,
       validations: [
@@ -359,18 +360,18 @@ export function App() {
       ],
     },
     {
-      id: "signedReleaseIpfsHash",
+      //id: "signedReleaseIpfsHash",
       name: "Signed Release hash",
       placeholder: "Signed IPFS multihash",
-      help: "IPFS hash of the signed release. In format /ipfs/[multihash], i.e. /ipfs/QmVeaz5kR55nAiGjYpXpUAJpWvf6net4MbGFNjBfMTS8xS",
+      //help: "IPFS hash of the signed release. In format /ipfs/[multihash], i.e. /ipfs/QmVeaz5kR55nAiGjYpXpUAJpWvf6net4MbGFNjBfMTS8xS",
       value: signedReleaseHash,
       onValueChange: setSignedReleaseHash,
       validations: [
         isSigned === true
           ? { isValid: true, message: "Release is signed" }
           : isSigned === false
-          ? { isValid: false, message: "Release not signed" }
-          : null,
+            ? { isValid: false, message: "Release not signed" }
+            : null,
       ],
     },
   ];
@@ -378,7 +379,7 @@ export function App() {
   return (
     <div className="app">
       <Title title="SDK" subtitle="Publish" />
-      <div className="mt-3 text-muted">
+      <div className="text-muted mt-3">
         <p>
           This tool is part of the DAppNode Software Development Kit
           (dappnodesdk) and allows to sign DAppNode package release transactions
@@ -418,7 +419,7 @@ export function App() {
                     placeholder={field.placeholder}
                     value={field.value}
                     onChange={(e) => field.onValueChange(e.target.value)}
-                    disabled={field.id === `signedReleaseIpfsHash`}
+                    disabled={field.name === "Signed Release hash"}
                   />
                   {success.map((item, i) => (
                     <div key={i} className="valid-feedback">
@@ -430,9 +431,9 @@ export function App() {
                       <div>{item.message}</div>
                     </div>
                   ))}
-                  <small className="form-text text-muted help">
+                  {/* <small className="form-text text-muted help">
                     {field.help}
-                  </small>
+                  </small> */}
                 </div>
               </React.Fragment>
             );

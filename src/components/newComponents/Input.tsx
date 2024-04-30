@@ -4,7 +4,9 @@ interface inputProps {
   name: string;
   placeholder: string;
   value: string;
-  onChange: void;
+  success?: boolean;
+  error?: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export default function Input({
@@ -12,16 +14,23 @@ export default function Input({
   placeholder,
   value,
   onChange,
+  error,
+  success,
 }: inputProps) {
   return (
     <div className="flex flex-col">
       <div className="text-text-purple">{name}</div>
       <input
         type="text"
-        className="bg-background-color focus:outline-focused-purple w-full min-w-max rounded-2xl px-4 py-3  text-sm"
+        className={`w-full min-w-max rounded-2xl bg-background-color px-4 py-3 text-sm focus:outline-focused-purple ${
+          error
+            ? "text-red-500 outline outline-1 outline-red-500 focus:outline-red-500"
+            : success &&
+              "outline outline-1 outline-green-500 focus:outline-green-500"
+        }`}
         placeholder={placeholder}
         value={value}
-        onChange={() => onChange}
+        onChange={onChange}
       />
     </div>
   );

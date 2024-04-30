@@ -1,4 +1,5 @@
 import React from "react";
+import { newTabProps } from "utils/newTabProps";
 
 interface linkProps {
   href: string;
@@ -7,7 +8,11 @@ interface linkProps {
 
 export default function Link({ href, children }: linkProps) {
   return (
-    <a className="text-text-purple hover:text-text-purple" href={href}>
+    <a
+      className="text-text-purple hover:text-text-purple"
+      href={href}
+      {...newTabProps}
+    >
       {children}
     </a>
   );
