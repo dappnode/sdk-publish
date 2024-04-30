@@ -11,19 +11,33 @@ import Button from "../Button";
 import Input from "../Input";
 import Title from "../Title";
 
-interface IntroductionStepProps {
+interface ReleaseFormProps {
   stepper: {
     state: number;
     setter: React.Dispatch<React.SetStateAction<number>>;
   };
+  dnpName: string;
+  setDnpName: React.Dispatch<React.SetStateAction<string>>;
+  developerAddress: string;
+  setDeveloperAddress: React.Dispatch<React.SetStateAction<string>>;
+  version: string;
+  setVersion: React.Dispatch<React.SetStateAction<string>>;
+  releaseHash: string;
+  setReleaseHash: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export default function IntroductionStep({ stepper }: IntroductionStepProps) {
+export default function ReleaseForm({
+  stepper,
+  dnpName,
+  setDnpName,
+  developerAddress,
+  setDeveloperAddress,
+  version,
+  setVersion,
+  releaseHash,
+  setReleaseHash,
+}: ReleaseFormProps) {
   // Form input variables
-  const [dnpName, setDnpName] = useState("");
-  const [version, setVersion] = useState("");
-  const [developerAddress, setDeveloperAddress] = useState("");
-  const [releaseHash, setReleaseHash] = useState("");
 
   const [repoAddresses, setRepoAddresses] = useState<RepoAddresses>();
   const [latestVersion, setLatestVersion] = useState<string>();
