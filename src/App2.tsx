@@ -6,9 +6,11 @@ import Header from "components/newComponents/Header";
 import IntroductionStep from "components/newComponents/steps/IntroductionStep";
 import ReleaseFormStep from "components/newComponents/steps/ReleaseFormStep";
 import ConnectAndSignStep from "components/newComponents/steps/ConnectAndSignStep";
+import { readIpfsApiUrls } from "settings";
+import IpfsSettingsStep from "components/newComponents/steps/IpfsSettingsStep";
 
 export function App() {
-  const [stepper, setStepper] = useState(0);
+  const [stepper, setStepper] = useState(3);
 
   const [dnpName, setDnpName] = useState("");
   const [version, setVersion] = useState("");
@@ -27,6 +29,8 @@ export function App() {
   const [publishReqStatus, setPublishReqStatus] = useState<
     RequestStatus<string>
   >({});
+
+  const [ipfsApiUrls, setIpfsApiUrls] = useState(readIpfsApiUrls());
 
   const provider = providerReq.result;
 
@@ -97,7 +101,16 @@ export function App() {
           />
         );
       case 3:
-        return <p>aquest es el pas 3</p>;
+        return (
+          <IpfsSettingsStep
+            stepper={{
+              state: stepper,
+              setter: setStepper,
+            }}
+            ipfsApiUrls={ipfsApiUrls}
+            setIpfsApiUrls={setIpfsApiUrls}
+          />
+        );
       case 4:
         return <p>aquest es el pas 4</p>;
     }

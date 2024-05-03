@@ -91,15 +91,22 @@ export default function ConnectAndSignStep({
       );
       setSignReq({ result: newReleaseHash });
       setSignedReleaseHash(`/ipfs/${newReleaseHash}`);
-      //stepper.setter(stepper.state + 1);
+      stepper.setter(4);
     } catch (e) {
       console.error(e);
       setSignReq({ error: e as Error });
     }
   }
+
   return (
     <BaseCard hasBack={() => stepper.setter(stepper.state - 1)}>
       <Title title={"2. Connect to your wallet and sign the release"} />
+      <div
+        onClick={() => stepper.setter(3)}
+        className="w-fit  cursor-pointer text-text-purple transition-all duration-300 ease-in-out hover:tracking-wide hover:underline"
+      >
+        Edit IPFS Settings
+      </div>
       {!provider ? (
         <>
           <p>There is not any Metamask wallet linked yet!</p>
