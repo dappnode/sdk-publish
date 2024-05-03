@@ -8,6 +8,7 @@ module.exports = {
         "text-purple": "#9333ea",
         "default-purple": "#E9D0FF ",
         "focused-purple": "#C98DFF",
+        "error-red": "#bc2f39",
       },
       fontFamily: {
         modeG: ["Mode G", "sans-serif"],
