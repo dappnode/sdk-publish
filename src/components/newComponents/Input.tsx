@@ -24,7 +24,7 @@ export default function Input({
         type="text"
         className={`w-full min-w-max rounded-2xl bg-background-color px-4 py-3 text-sm focus:outline-focused-purple ${
           error
-            ? "text-red-500 outline outline-1 outline-red-500 focus:outline-red-500"
+            ? "text-error-red outline-error-red focus:outline-error-red outline outline-1"
             : success &&
               "outline outline-1 outline-green-500 focus:outline-green-500"
         }`}

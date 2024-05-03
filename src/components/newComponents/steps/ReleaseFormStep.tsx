@@ -169,7 +169,7 @@ export default function ReleaseForm({
                   <div
                     key={i}
                     className={`mt-2 text-xs ${
-                      validation.isValid ? "text-green-500" : "text-red-500"
+                      validation.isValid ? "text-green-500" : "text-error-red"
                     }`}
                   >
                     {validation.message}

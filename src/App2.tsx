@@ -1,8 +1,11 @@
+import React, { useEffect, useState } from "react";
+import { ethers } from "ethers";
+import { RequestStatus } from "types";
 import { parseUrlQuery } from "utils/urlQuery";
 import Header from "components/newComponents/Header";
 import IntroductionStep from "components/newComponents/steps/IntroductionStep";
 import ReleaseFormStep from "components/newComponents/steps/ReleaseFormStep";
-import React, { useEffect, useState } from "react";
+import ConnectAndSignStep from "components/newComponents/steps/ConnectAndSignStep";
 
 export function App() {
   const [stepper, setStepper] = useState(0);
@@ -11,12 +14,27 @@ export function App() {
   const [version, setVersion] = useState("");
   const [developerAddress, setDeveloperAddress] = useState("");
   const [releaseHash, setReleaseHash] = useState("");
+  const [signedReleaseHash, setSignedReleaseHash] = useState<string | null>(
+    null,
+  );
 
+  const [metamaskAddress, setMetamaskAddress] = useState("");
+
+  const [providerReq, setProviderReq] = useState<
+    RequestStatus<ethers.BrowserProvider>
+  >({});
+
+  const [publishReqStatus, setPublishReqStatus] = useState<
+    RequestStatus<string>
+  >({});
+
+  const provider = providerReq.result;
+
+  // Set state based on URL parameters
   useEffect(() => {
     const urlParams = parseUrlQuery(window.location.search);
     console.log("URL params", urlParams);
 
-    // Set state based on URL parameters
     if (urlParams.r) setDnpName(urlParams.r);
     if (urlParams.v) setVersion(urlParams.v);
     if (urlParams.d) setDeveloperAddress(urlParams.d);
@@ -30,6 +48,12 @@ export function App() {
 
   function Steps() {
     switch (stepper) {
+      // STEPS:
+      // 0. Introduction
+      // 1. Release Form
+      // 2. Connect Wallet and sign
+      // 3. Edit IPFS settings
+      // 4. Release checking / publish
       case 0:
         return (
           <IntroductionStep
@@ -56,10 +80,30 @@ export function App() {
             setReleaseHash={setReleaseHash}
           />
         );
+      case 2:
+        return (
+          <ConnectAndSignStep
+            stepper={{
+              state: stepper,
+              setter: setStepper,
+            }}
+            provider={provider}
+            providerReq={providerReq}
+            setProviderReq={setProviderReq}
+            releaseHash={releaseHash}
+            setSignedReleaseHash={setSignedReleaseHash}
+            metamaskAddress={metamaskAddress}
+            setMetamaskAddress={setMetamaskAddress}
+          />
+        );
+      case 3:
+        return <p>aquest es el pas 3</p>;
+      case 4:
+        return <p>aquest es el pas 4</p>;
     }
   }
   return (
-    <div className="flex h-screen w-screen flex-col ">
+    <div className="flex h-screen w-screen flex-col overflow-y-clip">
       <Header />
       <div className=" flex h-full flex-col items-center bg-background-color">
         {Steps()}
