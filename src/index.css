@@ -6,7 +6,7 @@
   @font-face {
     font-family: "Mode G";
     font-weight: 500;
-    src: url("./modeg.ttf") format("ttf");
+    src: url("./modeg.ttf") format("truetype");
   }
 }
 
