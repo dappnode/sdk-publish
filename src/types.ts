@@ -35,3 +35,8 @@ export interface FormField {
   onValueChange: (newValue: any) => void;
   validations?: FormFieldValidation[];
 }
+export interface ReleaseDetails {
+  name: string;
+  value: string;
+  validations?: FormFieldValidation[];
+}

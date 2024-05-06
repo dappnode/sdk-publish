@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from "react";
-import BaseCard from "../BaseCard";
-import Title from "../Title";
-import Button from "../Button";
-import { RequestStatus } from "types";
-import { ethers } from "ethers";
-import { parseIpfsApiUrls, readIpfsApiUrls, writeIpfsApiUrls } from "settings";
-import { signRelease } from "utils/signRelease";
 import { ErrorView } from "components/ErrorView";
 import { LoadingView } from "components/LoadingView";
+import { ethers } from "ethers";
+import React, { useEffect, useState } from "react";
+import { parseIpfsApiUrls, readIpfsApiUrls, writeIpfsApiUrls } from "settings";
+import { RequestStatus } from "types";
+import { signRelease } from "utils/signRelease";
+import BaseCard from "../BaseCard";
+import Button from "../Button";
+import Title from "../Title";
+import { apmRepoIsAllowed } from "utils/apmRepoIsAllowed";
+import memoizee from "memoizee";
+import { resolveDnpName } from "utils/resolveDnpName";
 
 interface ConnectAndSignStepProps {
   stepper: {
@@ -20,9 +23,13 @@ interface ConnectAndSignStepProps {
     React.SetStateAction<RequestStatus<ethers.BrowserProvider>>
   >;
   releaseHash: string;
+
   setSignedReleaseHash: React.Dispatch<React.SetStateAction<string | null>>;
   metamaskAddress: string;
   setMetamaskAddress: React.Dispatch<React.SetStateAction<string>>;
+  dnpName: string;
+  isAllowedAddress: boolean | null;
+  setIsAllowedAddress: React.Dispatch<React.SetStateAction<boolean | null>>;
 }
 
 export default function ConnectAndSignStep({
@@ -34,6 +41,9 @@ export default function ConnectAndSignStep({
   setSignedReleaseHash,
   metamaskAddress,
   setMetamaskAddress,
+  dnpName,
+  isAllowedAddress,
+  setIsAllowedAddress,
 }: ConnectAndSignStepProps) {
   const [ipfsApiUrls, setIpfsApiUrls] = useState(readIpfsApiUrls());
   // Persist apiUrls settings
@@ -52,6 +62,39 @@ export default function ConnectAndSignStep({
     setAccount();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [providerReq]);
+
+  useEffect(() => {
+    // Necessary code to refresh the userAddress
+    // when user interacts with the metamask extension
+    // @ts-ignore
+    const ethereum = window.ethereum;
+    if (ethereum)
+      ethereum.on("accountsChanged", (accounts: string[]) => {
+        console.log("new user account", accounts[0]);
+        setMetamaskAddress(accounts[0]);
+      });
+  }, []);
+
+  const resolveDnpNameMem = memoizee(resolveDnpName, { promise: true });
+
+  //Checks if the walllet address is whitelisted to publish
+  useEffect(() => {
+    if (dnpName && metamaskAddress && provider) {
+      (async () => {
+        if (!provider) throw Error(`Must connect to Metamask first`);
+
+        if (metamaskAddress) {
+          const { repoAddress } = await resolveDnpNameMem(dnpName, provider);
+          if (repoAddress) {
+            setIsAllowedAddress(
+              await apmRepoIsAllowed(repoAddress, metamaskAddress, provider),
+            );
+          }
+        }
+      })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metamaskAddress]);
 
   async function connectToMetamask() {
     try {
@@ -125,7 +168,7 @@ export default function ConnectAndSignStep({
             </p>
             {signReq.loading && <LoadingView steps={["Signing release"]} />}
             {signReq.error && (
-              <div className="text-error-red text-sm">
+              <div className="text-sm text-error-red">
                 Error while trying to sign the release. For more information
                 check the console or click{" "}
                 <span
@@ -142,7 +185,16 @@ export default function ConnectAndSignStep({
               </div>
             )}
 
-            <Button onClick={doSignRelease} disabled={signReq.loading}>
+            {isAllowedAddress === false && (
+              <div className="text-error-red">
+                This wallet address is not allowed to publish in this repo.
+                Change to an allowed account to continue
+              </div>
+            )}
+            <Button
+              onClick={doSignRelease}
+              disabled={signReq.loading || !isAllowedAddress}
+            >
               Sign release
             </Button>
           </>

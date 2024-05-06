@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from "react";
+import Header from "components/newComponents/Header";
+import CheckAndPublish from "components/newComponents/steps/CheckAndPublishStep";
+import ConnectAndSignStep from "components/newComponents/steps/ConnectAndSignStep";
+import IntroductionStep from "components/newComponents/steps/IntroductionStep";
+import IpfsSettingsStep from "components/newComponents/steps/IpfsSettingsStep";
+import ReleaseFormStep from "components/newComponents/steps/ReleaseFormStep";
+import ReleasePublished from "components/newComponents/steps/ReleasePublished";
 import { ethers } from "ethers";
+import React, { useEffect, useState } from "react";
+import { readIpfsApiUrls } from "settings";
 import { RequestStatus } from "types";
 import { parseUrlQuery } from "utils/urlQuery";
-import Header from "components/newComponents/Header";
-import IntroductionStep from "components/newComponents/steps/IntroductionStep";
-import ReleaseFormStep from "components/newComponents/steps/ReleaseFormStep";
-import ConnectAndSignStep from "components/newComponents/steps/ConnectAndSignStep";
-import { readIpfsApiUrls } from "settings";
-import IpfsSettingsStep from "components/newComponents/steps/IpfsSettingsStep";
 
 export function App() {
-  const [stepper, setStepper] = useState(3);
+  const [stepper, setStepper] = useState(0);
 
   const [dnpName, setDnpName] = useState("");
   const [version, setVersion] = useState("");
@@ -30,9 +32,13 @@ export function App() {
     RequestStatus<string>
   >({});
 
-  const [ipfsApiUrls, setIpfsApiUrls] = useState(readIpfsApiUrls());
-
+  const [isAllowedAddress, setIsAllowedAddress] = useState<boolean | null>(
+    null,
+  );
+  // Precomputed variables
   const provider = providerReq.result;
+
+  const [ipfsApiUrls, setIpfsApiUrls] = useState(readIpfsApiUrls());
 
   // Set state based on URL parameters
   useEffect(() => {
@@ -57,7 +63,8 @@ export function App() {
       // 1. Release Form
       // 2. Connect Wallet and sign
       // 3. Edit IPFS settings
-      // 4. Release checking / publish
+      // 4. check and publish
+      // 4. release published
       case 0:
         return (
           <IntroductionStep
@@ -98,6 +105,9 @@ export function App() {
             setSignedReleaseHash={setSignedReleaseHash}
             metamaskAddress={metamaskAddress}
             setMetamaskAddress={setMetamaskAddress}
+            isAllowedAddress={isAllowedAddress}
+            setIsAllowedAddress={setIsAllowedAddress}
+            dnpName={dnpName}
           />
         );
       case 3:
@@ -112,7 +122,36 @@ export function App() {
           />
         );
       case 4:
-        return <p>aquest es el pas 4</p>;
+        return (
+          <CheckAndPublish
+            stepper={{
+              state: stepper,
+              setter: setStepper,
+            }}
+            dnpName={dnpName}
+            devAddress={developerAddress}
+            version={version}
+            releaseHash={releaseHash}
+            signedReleaseHash={signedReleaseHash!}
+            provider={provider}
+            metamaskAddress={metamaskAddress}
+            developerAddress={developerAddress}
+            isAllowedAddress={isAllowedAddress}
+            setIsAllowedAddress={setIsAllowedAddress}
+            publishReqStatus={publishReqStatus}
+            setPublishReqStatus={setPublishReqStatus}
+          />
+        );
+      case 5:
+        return (
+          <ReleasePublished
+            stepper={{
+              state: stepper,
+              setter: setStepper,
+            }}
+            publishReqStatus={publishReqStatus}
+          />
+        );
     }
   }
   return (

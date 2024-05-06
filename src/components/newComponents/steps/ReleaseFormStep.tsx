@@ -1,9 +1,8 @@
 import { ethers } from "ethers";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import semver from "semver";
-import { FormField, Manifest, RepoAddresses } from "types";
+import { FormField } from "types";
 import { isIpfsHash } from "utils/isIpfsHash";
-import { isValidBump } from "utils/isValidBump";
 import { isValidEns } from "utils/isValidEns";
 import { notNullish } from "utils/notNullish";
 import BaseCard from "../BaseCard";
@@ -39,10 +38,6 @@ export default function ReleaseForm({
 }: ReleaseFormProps) {
   // Form input variables
 
-  const [repoAddresses, setRepoAddresses] = useState<RepoAddresses>();
-  const [latestVersion, setLatestVersion] = useState<string>();
-  const [manifest, setManifest] = useState<Manifest & { hash: string }>();
-
   const fields: FormField[] = [
     {
       name: "DAppNode Package name",
@@ -54,22 +49,6 @@ export default function ReleaseForm({
           ? isValidEns(dnpName)
             ? { isValid: true, message: "Valid ENS domain" }
             : { isValid: false, message: "Invalid ENS domain" }
-          : null,
-        dnpName && repoAddresses
-          ? repoAddresses.registryAddress
-            ? repoAddresses.repoAddress
-              ? {
-                  isValid: true,
-                  message: `Repo already deployed at: ${repoAddresses.repoAddress}`,
-                }
-              : {
-                  isValid: true,
-                  message: `New repo to be deployed for ${dnpName}`,
-                }
-            : {
-                isValid: false,
-                message: `No valid registry found for ${dnpName}`,
-              }
           : null,
       ],
     },
@@ -97,11 +76,6 @@ export default function ReleaseForm({
             ? { isValid: true, message: "Valid semver" }
             : { isValid: false, message: "Invalid semver" }
           : null,
-        version && latestVersion
-          ? isValidBump(latestVersion, version)
-            ? { isValid: true, message: `Valid bump from ${latestVersion}` }
-            : { isValid: false, message: "Next version is not a valid bump" }
-          : null,
       ],
     },
     {
@@ -114,18 +88,6 @@ export default function ReleaseForm({
           ? isIpfsHash(releaseHash)
             ? { isValid: true, message: "Valid ipfs hash" }
             : { isValid: false, message: "Invalid ipfs hash" }
-          : null,
-        manifest &&
-        releaseHash &&
-        releaseHash === manifest.hash &&
-        manifest.name &&
-        manifest.version
-          ? manifest.name === dnpName && manifest.version === version
-            ? { isValid: true, message: "Manifest successfully verified" }
-            : {
-                isValid: false,
-                message: `Manifest verification failed. This manifest is for ${manifest.name} @ ${manifest.version}`,
-              }
           : null,
       ],
     },
@@ -169,7 +131,9 @@ export default function ReleaseForm({
                   <div
                     key={i}
                     className={`mt-2 text-xs ${
-                      validation.isValid ? "text-green-500" : "text-error-red"
+                      validation.isValid
+                        ? "text-success-green"
+                        : "text-error-red"
                     }`}
                   >
                     {validation.message}

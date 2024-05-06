@@ -9,6 +9,7 @@ module.exports = {
         "default-purple": "#E9D0FF ",
         "focused-purple": "#C98DFF",
         "error-red": "#bc2f39",
+        "success-green": "#22c55e",
       },
       fontFamily: {
         modeG: ["Mode G", "sans-serif"],
