@@ -124,9 +124,12 @@ export function App() {
   const onNewManifestHash = useMemo(
     () =>
       debounce(async (hash: string) => {
-        fetchManifestMem(hash, IPFS_GATEWAY)
-          .then((manifest) => setManifest({ ...manifest, hash }))
-          .catch((e) => console.error(`Error fetching manifest ${hash}`, e));
+        try {
+          const manifest = await fetchManifestMem(hash, IPFS_GATEWAY);
+          setManifest({ ...manifest, hash });
+        } catch (error) {
+          console.error(`Error fetching manifest ${hash}`, error);
+        }
 
         try {
           await fetchReleaseSignature(hash, IPFS_GATEWAY);
@@ -344,16 +347,23 @@ export function App() {
             ? { isValid: true, message: "Valid ipfs hash" }
             : { isValid: false, message: "Invalid ipfs hash" }
           : null,
-        manifest &&
-        releaseHash &&
-        releaseHash === manifest.hash &&
-        manifest.name &&
-        manifest.version
-          ? manifest.name === dnpName && manifest.version === version
-            ? { isValid: true, message: "Manifest successfully verified" }
+        // checking first that the release has been already signed to continue with the others checks
+        signedReleaseHash
+          ? manifest
+            ? manifest.name && manifest.version
+              ? manifest.name === dnpName && manifest.version === version
+                ? { isValid: true, message: "Manifest successfully verified" }
+                : {
+                    isValid: false,
+                    message: `Manifest verification failed. This manifest is for ${manifest.name} @ ${manifest.version}`,
+                  }
+              : {
+                  isValid: false,
+                  message: `Manifest's name or version not found in this hash`,
+                }
             : {
                 isValid: false,
-                message: `Manifest verification failed. This manifest is for ${manifest.name} @ ${manifest.version}`,
+                message: `Hash or manifest not found`,
               }
           : null,
       ],
@@ -366,10 +376,21 @@ export function App() {
       value: signedReleaseHash,
       onValueChange: setSignedReleaseHash,
       validations: [
-        isSigned === true
+        isSigned
           ? { isValid: true, message: "Release is signed" }
           : isSigned === false
-          ? { isValid: false, message: "Release not signed" }
+            ? { isValid: false, message: "Release not signed" }
+            : null,
+        manifest
+          ? signedReleaseHash && signedReleaseHash === manifest.hash
+            ? {
+                isValid: true,
+                message: "Signed release hash successfully verified",
+              }
+            : {
+                isValid: false,
+                message: `Signed release hash verification failed. Its manifest hash is ${manifest.hash}`,
+              }
           : null,
       ],
     },
@@ -460,7 +481,12 @@ export function App() {
                   disabled={
                     publishReqStatus.loading ||
                     !isSigned ||
-                    (!isAllowedAddress && repoAddresses?.repoAddress !== null)
+                    (!isAllowedAddress &&
+                      repoAddresses?.repoAddress !== null) ||
+                    !manifest ||
+                    manifest.name !== dnpName ||
+                    manifest.version !== version ||
+                    manifest.hash !== signedReleaseHash
                   }
                   onClick={publish}
                 >
