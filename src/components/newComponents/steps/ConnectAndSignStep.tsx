@@ -77,7 +77,7 @@ export default function ConnectAndSignStep({
 
   const resolveDnpNameMem = memoizee(resolveDnpName, { promise: true });
 
-  //Checks if the walllet address is whitelisted to publish
+  //Checks if the wallet address is whitelisted to publish
   useEffect(() => {
     if (dnpName && metamaskAddress && provider) {
       (async () => {
@@ -154,7 +154,7 @@ export default function ConnectAndSignStep({
         <>
           <p>There is not any Metamask wallet linked yet!</p>
           <Button onClick={connectToMetamask} disabled={providerReq.loading}>
-            Connect to wallet
+            Connect wallet
           </Button>
         </>
       ) : (

@@ -13,6 +13,7 @@ module.exports = {
       },
       fontFamily: {
         modeG: ["Mode G", "sans-serif"],
+        poppins: ["Poppins", "sans-serif"],
       },
     },
   },

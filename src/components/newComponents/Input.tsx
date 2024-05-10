@@ -22,9 +22,9 @@ export default function Input({
       <div className="text-text-purple">{name}</div>
       <input
         type="text"
-        className={`w-full min-w-max rounded-2xl bg-background-color px-4 py-3 text-sm focus:outline-focused-purple ${
+        className={`w-full min-w-max rounded-2xl bg-background-color px-2 py-2 text-sm focus:outline-focused-purple ${
           error
-            ? "text-error-red outline-error-red focus:outline-error-red outline outline-1"
+            ? "text-error-red outline outline-1 outline-error-red focus:outline-error-red"
             : success &&
               "outline outline-1 outline-green-500 focus:outline-green-500"
         }`}

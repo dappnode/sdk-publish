@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import BaseCard from "../BaseCard";
 import Title from "../Title";
+import Button from "../Button";
+import { writeIpfsApiUrls } from "settings";
 
 interface IpfsSettingsStepProps {
   stepper: {
@@ -16,16 +18,17 @@ export default function IpfsSettingsStep({
   ipfsApiUrls,
   setIpfsApiUrls,
 }: IpfsSettingsStepProps) {
+  useEffect(() => writeIpfsApiUrls(ipfsApiUrls), [ipfsApiUrls]);
   return (
-    <BaseCard hasBack={() => stepper.setter(2)}>
-      <Title title={"Edit IPFS settings"} />
+    <BaseCard hasBack={() => stepper.setter(stepper.state - 1)}>
+      <Title title={"2. Edit IPFS settings"} />
       <p>
         You can edit your IPFS settings regarding the propagation of the
         releases. If not specified, the default values shown below will be
         applied.
       </p>
-      <div className="text-text-purple">IPFS API URLs</div>
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-1">
+        <div className="text-text-purple">IPFS API URLs</div>
         <p className="text-sm">
           Fulfill with multiple API URLs, to facilitate propagation of the
           signed release
@@ -40,8 +43,8 @@ export default function IpfsSettingsStep({
         />{" "}
       </div>
       {/* // TODO: IPFS gateway logic */}
-      <div className="text-text-purple">IPFS Gateway URLs</div>
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-1">
+        <div className="text-text-purple">IPFS Gateway URLs</div>
         <p className="text-sm">
           Fulfill with multiple Gateway URLs to ensure that the IPFS hash has
           propagated or not.
@@ -56,6 +59,7 @@ export default function IpfsSettingsStep({
           // onChange={(e) => setIpfsApiUrls(e.target.value)}
         />
       </div>
+      <Button onClick={() => stepper.setter(stepper.state + 1)}>Next</Button>
     </BaseCard>
   );
 }
