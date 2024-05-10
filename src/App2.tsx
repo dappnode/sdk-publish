@@ -1,11 +1,10 @@
 import Header from "components/newComponents/Header";
-import SignAndPublish from "components/newComponents/steps/SignAndPublishStep";
-import ConnectAndSignStep from "components/newComponents/steps/ConnectAndSignStep";
 import ConnectWalletStep from "components/newComponents/steps/ConnectWalletStep";
 import IntroductionStep from "components/newComponents/steps/IntroductionStep";
 import IpfsSettingsStep from "components/newComponents/steps/IpfsSettingsStep";
 import ReleaseFormStep from "components/newComponents/steps/ReleaseFormStep";
 import ReleasePublished from "components/newComponents/steps/ReleasePublished";
+import SignAndPublish from "components/newComponents/steps/SignAndPublishStep";
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
 import { readIpfsApiUrls } from "settings";
@@ -25,8 +24,6 @@ export function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [isMainnet, setIsMainnet] = useState(false);
   const [account, setAccount] = useState<string | null>(null);
-
-  const [metamaskAddress, setMetamaskAddress] = useState("");
 
   const [providerReq, setProviderReq] = useState<
     RequestStatus<ethers.BrowserProvider>
@@ -53,7 +50,7 @@ export function App() {
 
     // Check if any URL parameter exists, then set the stepper
     if (urlParams.r || urlParams.v || urlParams.d || urlParams.h) {
-      setStepper(3);
+      setStepper(1);
     }
   }, []);
 
@@ -114,21 +111,11 @@ export function App() {
       // 4. check and publish
       // 5. release published
       case 0:
-        return (
-          <IntroductionStep
-            stepper={{
-              state: stepper,
-              setter: setStepper,
-            }}
-          />
-        );
+        return <IntroductionStep setStepper={setStepper} />;
       case 1:
         return (
           <ConnectWalletStep
-            stepper={{
-              state: stepper,
-              setter: setStepper,
-            }}
+            setStepper={setStepper}
             account={account}
             setAccount={setAccount}
             isMainnet={isMainnet}
@@ -136,16 +123,14 @@ export function App() {
             isConnected={isConnected}
             setIsConnected={setIsConnected}
             provider={window.ethereum}
+            setProviderReq={setProviderReq}
           />
         );
 
       case 2:
         return (
           <IpfsSettingsStep
-            stepper={{
-              state: stepper,
-              setter: setStepper,
-            }}
+            setStepper={setStepper}
             ipfsApiUrls={ipfsApiUrls}
             setIpfsApiUrls={setIpfsApiUrls}
           />
@@ -153,10 +138,7 @@ export function App() {
       case 3:
         return (
           <ReleaseFormStep
-            stepper={{
-              state: stepper,
-              setter: setStepper,
-            }}
+            setStepper={setStepper}
             dnpName={dnpName}
             setDnpName={setDnpName}
             developerAddress={developerAddress}
@@ -165,16 +147,13 @@ export function App() {
             setVersion={setVersion}
             releaseHash={releaseHash}
             setReleaseHash={setReleaseHash}
-            provider={window.ethereum}
+            provider={provider}
           />
         );
       case 4:
         return (
           <SignAndPublish
-            stepper={{
-              state: stepper,
-              setter: setStepper,
-            }}
+            setStepper={setStepper}
             dnpName={dnpName}
             devAddress={developerAddress}
             version={version}
@@ -190,10 +169,7 @@ export function App() {
       case 6:
         return (
           <ReleasePublished
-            stepper={{
-              state: stepper,
-              setter: setStepper,
-            }}
+            setStepper={setStepper}
             publishReqStatus={publishReqStatus}
           />
         );

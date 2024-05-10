@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Manifest, ReleaseDetails, RequestStatus } from "types";
+import { ReleaseDetails, RequestStatus } from "types";
 import { notNullish } from "utils/notNullish";
 import BaseCard from "../BaseCard";
 import Title from "../Title";
@@ -16,10 +16,7 @@ import { signRelease } from "utils/signRelease";
 import Button from "../Button";
 
 interface SignAndPublishProps {
-  stepper: {
-    state: number;
-    setter: React.Dispatch<React.SetStateAction<number>>;
-  };
+  setStepper: React.Dispatch<React.SetStateAction<number>>;
   dnpName: string;
   devAddress: string;
   version: string;
@@ -35,7 +32,7 @@ interface SignAndPublishProps {
 }
 
 export default function SignAndPublish({
-  stepper,
+  setStepper,
   dnpName,
   devAddress,
   version,
@@ -49,7 +46,6 @@ export default function SignAndPublish({
 }: SignAndPublishProps) {
   const [signedReleaseHash, setSignedReleaseHash] = useState<string>("");
 
-  const [manifest, setManifest] = useState<Manifest & { hash: string }>();
   const [isSigned, setIsSigned] = useState<boolean | null>(null);
   const [signReq, setSignReq] = useState<RequestStatus<string>>({});
 
@@ -75,8 +71,7 @@ export default function SignAndPublish({
         }
       })();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [account]);
 
   const details: ReleaseDetails[] = [
     {
@@ -95,19 +90,6 @@ export default function SignAndPublish({
     {
       name: "Signed Release hash",
       value: signedReleaseHash,
-      validations: [
-        isSigned && manifest
-          ? signedReleaseHash && signedReleaseHash === manifest.hash
-            ? {
-                isValid: true,
-                message: "Signed release hash successfully verified",
-              }
-            : {
-                isValid: false,
-                message: `Signed release hash verification failed. Its manifest hash is ${manifest.hash}`,
-              }
-          : null,
-      ],
     },
   ];
 
@@ -121,10 +103,11 @@ export default function SignAndPublish({
       );
       setSignReq({ result: newReleaseHash });
       setSignedReleaseHash(`/ipfs/${newReleaseHash}`);
-      stepper.setter(4);
+      setIsSigned(true);
     } catch (e) {
       console.error(e);
       setSignReq({ error: e as Error });
+      setIsSigned(false);
     }
   }
 
@@ -160,6 +143,7 @@ export default function SignAndPublish({
         provider,
       );
       setPublishReqStatus({ result: txHash });
+      setStepper((prevState) => prevState + 1);
     } catch (e) {
       console.error(e);
       setPublishReqStatus({ error: e as Error });
@@ -167,8 +151,8 @@ export default function SignAndPublish({
   }
 
   return (
-    <BaseCard hasBack={() => stepper.setter(2)}>
-      <Title title={"3. Sign and publish the release"} />
+    <BaseCard hasBack={() => setStepper((prevState) => prevState - 1)}>
+      <Title title={"4. Sign and Publish"} />
       <p>Double-check the release details to sign and publish!</p>
 
       {details.map((detail, i) => {
@@ -210,28 +194,29 @@ export default function SignAndPublish({
           an allowed account to continue
         </div>
       )}
-      <Button
-        onClick={doSignRelease}
-        disabled={signReq.loading || !isAllowedAddress}
-      >
-        Sign release
-      </Button>
-
-      {/* {true ? (
-        <>
-          <p className="text-success-green">
-            All checks have passed. The release is ready to be published
-          </p>
-          <Button onClick={publish}> Publish</Button>
-        </>
+      {!isSigned ? (
+        <Button
+          onClick={doSignRelease}
+          disabled={signReq.loading || !isAllowedAddress}
+        >
+          Sign release
+        </Button>
       ) : (
         <>
-          <p className="text-error-red">
-            Some checks have not passed. Go back and modify the release details
+          <p className="text-success-green">
+            The release is ready to be published
           </p>
-          <Button onClick={() => stepper.setter(1)}> Modify release</Button>
+
+          <Button
+            onClick={publish}
+            disabled={
+              publishReqStatus.loading || !isSigned || !isAllowedAddress
+            }
+          >
+            Publish
+          </Button>
         </>
-      )} */}
+      )}
     </BaseCard>
   );
 }

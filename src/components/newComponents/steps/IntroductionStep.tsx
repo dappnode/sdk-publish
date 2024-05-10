@@ -6,13 +6,12 @@ import { SDK_INSTALL_URL } from "params";
 import Button from "../Button";
 
 interface IntroductionStepProps {
-  stepper: {
-    state: number;
-    setter: React.Dispatch<React.SetStateAction<number>>;
-  };
+  setStepper: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export default function IntroductionStep({ stepper }: IntroductionStepProps) {
+export default function IntroductionStep({
+  setStepper,
+}: IntroductionStepProps) {
   return (
     <BaseCard>
       <Title title={"Publish your package"} />
@@ -25,7 +24,9 @@ export default function IntroductionStep({ stepper }: IntroductionStepProps) {
         transaction install{" "}
         <Link href={SDK_INSTALL_URL}>@dappnode/dappnodesdk</Link>
       </p>
-      <Button onClick={() => stepper.setter(stepper.state + 1)}>Start</Button>
+      <Button onClick={() => setStepper((prevState) => prevState + 1)}>
+        Start
+      </Button>
     </BaseCard>
   );
 }

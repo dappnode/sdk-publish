@@ -4,12 +4,11 @@ import ConnectWallet from "../ConnectWallet";
 import { SwitchNetwork } from "../SwitchNetwork";
 import Title from "../Title";
 import Button from "../Button";
+import { RequestStatus } from "types";
+import { ethers } from "ethers";
 
 interface ConnectWalletStepProps {
-  stepper: {
-    state: number;
-    setter: React.Dispatch<React.SetStateAction<number>>;
-  };
+  setStepper: React.Dispatch<React.SetStateAction<number>>;
   account: string | null;
   setAccount: React.Dispatch<React.SetStateAction<string | null>>;
   isConnected: boolean;
@@ -17,10 +16,13 @@ interface ConnectWalletStepProps {
   isMainnet: boolean;
   setIsMainnet: React.Dispatch<React.SetStateAction<boolean>>;
   provider: any;
+  setProviderReq: (
+    value: React.SetStateAction<RequestStatus<ethers.BrowserProvider>>,
+  ) => void;
 }
 
 export default function ConnectWalletStep({
-  stepper,
+  setStepper,
   account,
   setAccount,
   isConnected,
@@ -28,6 +30,7 @@ export default function ConnectWalletStep({
   isMainnet,
   setIsMainnet,
   provider,
+  setProviderReq,
 }: ConnectWalletStepProps) {
   useEffect(() => {
     const fetchChain = async () => {
@@ -55,7 +58,7 @@ export default function ConnectWalletStep({
           console.log("accounts", accounts);
           // store it in state
           setAccount(accounts[0]);
-          stepper.setter(stepper.state + 1);
+          setStepper((prevState) => prevState + 1);
         })
         .catch((error: { message: string; code: number; data?: unknown }) =>
           console.log("error", error),
@@ -64,13 +67,16 @@ export default function ConnectWalletStep({
   }, [isMainnet]);
 
   return (
-    <BaseCard hasBack={() => stepper.setter(stepper.state - 1)}>
+    <BaseCard hasBack={() => setStepper((prevState) => prevState - 1)}>
       <Title title={"1. Connect your wallet"} />
       {provider ? (
         !isConnected ? (
           <>
             <p>To continue it's mandatory to connect your wallet</p>
-            <ConnectWallet setIsConnected={setIsConnected} />
+            <ConnectWallet
+              setIsConnected={setIsConnected}
+              setProviderReq={setProviderReq}
+            />
           </>
         ) : !isMainnet ? (
           <>
@@ -87,7 +93,7 @@ export default function ConnectWalletStep({
               Your current metamask addres is:{" "}
               <span className="tracking-wider text-text-purple">{account}</span>
             </p>
-            <Button onClick={() => stepper.setter(stepper.state + 1)}>
+            <Button onClick={() => setStepper((prevState) => prevState + 1)}>
               Next
             </Button>
           </>

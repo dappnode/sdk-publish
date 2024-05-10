@@ -19,10 +19,7 @@ import { IPFS_GATEWAY } from "params";
 import { fetchReleaseSignature } from "utils/fetchRelease";
 
 interface ReleaseFormProps {
-  stepper: {
-    state: number;
-    setter: React.Dispatch<React.SetStateAction<number>>;
-  };
+  setStepper: React.Dispatch<React.SetStateAction<number>>;
   dnpName: string;
   setDnpName: React.Dispatch<React.SetStateAction<string>>;
   developerAddress: string;
@@ -35,7 +32,7 @@ interface ReleaseFormProps {
 }
 
 export default function ReleaseForm({
-  stepper,
+  setStepper,
   dnpName,
   setDnpName,
   developerAddress,
@@ -46,8 +43,6 @@ export default function ReleaseForm({
   setReleaseHash,
   provider,
 }: ReleaseFormProps) {
-  const [isSigned, setIsSigned] = useState<boolean | null>(null);
-
   const [repoAddresses, setRepoAddresses] = useState<RepoAddresses>();
   const [latestVersion, setLatestVersion] = useState<string>();
   const [manifest, setManifest] = useState<Manifest & { hash: string }>();
@@ -194,7 +189,7 @@ export default function ReleaseForm({
   return (
     <BaseCard
       hasBack={() => {
-        stepper.setter(stepper.state - 1);
+        setStepper((prevState) => prevState - 1);
       }}
     >
       <Title title={"3. Release Details"} />
@@ -237,7 +232,7 @@ export default function ReleaseForm({
         );
       })}
       <Button
-        onClick={() => stepper.setter(stepper.state + 1)}
+        onClick={() => setStepper((prevState) => prevState + 1)}
         disabled={
           errors.length > 0 ||
           dnpName === "" ||

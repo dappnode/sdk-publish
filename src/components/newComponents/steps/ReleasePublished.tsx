@@ -5,15 +5,12 @@ import Button from "../Button";
 import Title from "../Title";
 
 interface IntroductionStepProps {
-  stepper: {
-    state: number;
-    setter: React.Dispatch<React.SetStateAction<number>>;
-  };
+  setStepper: React.Dispatch<React.SetStateAction<number>>;
   publishReqStatus: RequestStatus<string>;
 }
 
 export default function IntroductionStep({
-  stepper,
+  setStepper,
   publishReqStatus,
 }: IntroductionStepProps) {
   return (
@@ -27,7 +24,7 @@ export default function IntroductionStep({
         </div>
       )}
 
-      <Button onClick={() => stepper.setter(0)}>Back to start</Button>
+      <Button onClick={() => setStepper(0)}>Back to start</Button>
     </BaseCard>
   );
 }

@@ -5,22 +5,19 @@ import Button from "../Button";
 import { writeIpfsApiUrls } from "settings";
 
 interface IpfsSettingsStepProps {
-  stepper: {
-    state: number;
-    setter: React.Dispatch<React.SetStateAction<number>>;
-  };
+  setStepper: React.Dispatch<React.SetStateAction<number>>;
   ipfsApiUrls: string;
   setIpfsApiUrls: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function IpfsSettingsStep({
-  stepper,
+  setStepper,
   ipfsApiUrls,
   setIpfsApiUrls,
 }: IpfsSettingsStepProps) {
   useEffect(() => writeIpfsApiUrls(ipfsApiUrls), [ipfsApiUrls]);
   return (
-    <BaseCard hasBack={() => stepper.setter(stepper.state - 1)}>
+    <BaseCard hasBack={() => setStepper((prevState) => prevState - 1)}>
       <Title title={"2. Edit IPFS settings"} />
       <p>
         You can edit your IPFS settings regarding the propagation of the
@@ -59,7 +56,9 @@ export default function IpfsSettingsStep({
           // onChange={(e) => setIpfsApiUrls(e.target.value)}
         />
       </div>
-      <Button onClick={() => stepper.setter(stepper.state + 1)}>Next</Button>
+      <Button onClick={() => setStepper((prevState) => prevState + 1)}>
+        Next
+      </Button>
     </BaseCard>
   );
 }
