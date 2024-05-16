@@ -7,12 +7,12 @@ import ReleasePublished from "components/newComponents/steps/ReleasePublished";
 import SignAndPublish from "components/newComponents/steps/SignAndPublishStep";
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
-import { readIpfsApiUrls } from "settings";
+import { readIpfsApiUrls, readIpfsGatewayUrls } from "settings";
 import { RequestStatus } from "types";
 import { parseUrlQuery } from "utils/urlQuery";
 
 export function App() {
-  const [stepper, setStepper] = useState(2);
+  const [stepper, setStepper] = useState(0);
 
   //Release states
   const [dnpName, setDnpName] = useState("");
@@ -37,6 +37,7 @@ export function App() {
   const provider = providerReq.result;
 
   const [ipfsApiUrls, setIpfsApiUrls] = useState(readIpfsApiUrls());
+  const [ipfsGatewayUrls, setIpfsGatewayUrls] = useState(readIpfsGatewayUrls());
 
   // Set state based on URL parameters
   useEffect(() => {
@@ -55,31 +56,30 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    // window ethereum EIP: https://eips.ethereum.org/EIPS/eip-1193
-    if (window.ethereum) {
-      window.ethereum.on("chainChanged", (chainId: string) => {
-        console.log("event chainChanged: ", chainId);
-        window.location.reload();
-      });
-      window.ethereum.on("accountsChanged", (accounts: Array<string>) => {
-        console.log("event accountsChanged");
-        console.log("accounts", accounts);
-        setAccount(accounts[0]);
-      });
-    }
-    // window.ethereum.on(
-    //   "message",
-    //   (message: { type: string; data: unknown }) => {
-    //     console.log("event message", message);
-    //   },
-    // );
-    // window.ethereum.on(
-    //   "disconnect",
-    //   (error: { message: string; code: number; data?: unknown }) => {
-    //     console.log("disconnect", error);
-    //     setIsConnected(false);
-    //   },
-    // );
+    //window ethereum EIP: https://eips.ethereum.org/EIPS/eip-1193
+    window.ethereum.on("chainChanged", (chainId: string) => {
+      console.log("event chainChanged: ", chainId);
+      window.location.reload();
+    });
+    window.ethereum.on("accountsChanged", (accounts: Array<string>) => {
+      console.log("event accountsChanged");
+      console.log("accounts", accounts);
+      setAccount(accounts[0]);
+    });
+
+    window.ethereum.on(
+      "message",
+      (message: { type: string; data: unknown }) => {
+        console.log("event message", message);
+      },
+    );
+    window.ethereum.on(
+      "disconnect",
+      (error: { message: string; code: number; data?: unknown }) => {
+        console.log("disconnect", error);
+        setIsConnected(false);
+      },
+    );
     // window.ethereum.on("connect", (connectInfo: { chainId: string }) => {
     //   console.log("event connect", connectInfo);
     //   setIsConnected(true);
@@ -133,6 +133,8 @@ export function App() {
             setStepper={setStepper}
             ipfsApiUrls={ipfsApiUrls}
             setIpfsApiUrls={setIpfsApiUrls}
+            ipfsGatewayUrls={ipfsGatewayUrls}
+            setIpfsGatewayUrls={setIpfsGatewayUrls}
           />
         );
       case 3:

@@ -8,12 +8,13 @@ import { ErrorView } from "components/ErrorView";
 import { LoadingView } from "components/LoadingView";
 import { ethers } from "ethers";
 import memoizee from "memoizee";
-import { parseIpfsApiUrls } from "settings";
+import { parseIpfsUrls } from "settings";
 import { apmRepoIsAllowed } from "utils/apmRepoIsAllowed";
 import { executePublishTx } from "utils/executePublishTx";
 import { resolveDnpName } from "utils/resolveDnpName";
 import { signRelease } from "utils/signRelease";
 import Button from "../Button";
+import { DEFAULT_IPFS_API } from "params";
 
 interface SignAndPublishProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
@@ -38,7 +39,7 @@ export default function SignAndPublish({
   version,
   releaseHash,
   provider,
-  account: account,
+  account,
   developerAddress,
   publishReqStatus,
   setPublishReqStatus,
@@ -71,7 +72,7 @@ export default function SignAndPublish({
         }
       })();
     }
-  }, [account]);
+  }, [account, dnpName, provider, resolveDnpNameMem]);
 
   const details: ReleaseDetails[] = [
     {
@@ -99,7 +100,7 @@ export default function SignAndPublish({
       // newReleaseHash is not prefixed by '/ipfs/'
       const newReleaseHash = await signRelease(
         releaseHash,
-        parseIpfsApiUrls(ipfsApiUrls),
+        parseIpfsUrls(ipfsApiUrls ? ipfsApiUrls : DEFAULT_IPFS_API),
       );
       setSignReq({ result: newReleaseHash });
       setSignedReleaseHash(`/ipfs/${newReleaseHash}`);
@@ -188,11 +189,19 @@ export default function SignAndPublish({
       {publishReqStatus.loading && (
         <LoadingView steps={["Publishing release transaction"]} />
       )}
-      {!isAllowedAddress && (
+      {!isAllowedAddress ? (
         <div className="text-error-red">
           The address {account}is not allowed to publish in this repo. Change to
           an allowed account to continue
         </div>
+      ) : !isSigned ? (
+        <p className="text-center text-success-green">
+          The release is ready to be signed
+        </p>
+      ) : (
+        <p className="text-center text-success-green">
+          The release is ready to be published
+        </p>
       )}
       {!isSigned ? (
         <Button
@@ -202,20 +211,12 @@ export default function SignAndPublish({
           Sign release
         </Button>
       ) : (
-        <>
-          <p className="text-success-green">
-            The release is ready to be published
-          </p>
-
-          <Button
-            onClick={publish}
-            disabled={
-              publishReqStatus.loading || !isSigned || !isAllowedAddress
-            }
-          >
-            Publish
-          </Button>
-        </>
+        <Button
+          onClick={publish}
+          disabled={publishReqStatus.loading || !isSigned || !isAllowedAddress}
+        >
+          Publish
+        </Button>
       )}
     </BaseCard>
   );

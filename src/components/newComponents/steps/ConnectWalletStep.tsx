@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import BaseCard from "../BaseCard";
 import ConnectWallet from "../ConnectWallet";
 import { SwitchNetwork } from "../SwitchNetwork";
@@ -32,6 +32,7 @@ export default function ConnectWalletStep({
   provider,
   setProviderReq,
 }: ConnectWalletStepProps) {
+  const prevIsMainnet = useRef(isMainnet);
   useEffect(() => {
     const fetchChain = async () => {
       try {
@@ -58,7 +59,8 @@ export default function ConnectWalletStep({
           console.log("accounts", accounts);
           // store it in state
           setAccount(accounts[0]);
-          setStepper((prevState) => prevState + 1);
+          if (prevIsMainnet.current !== isMainnet)
+            setStepper((prevState) => prevState + 1);
         })
         .catch((error: { message: string; code: number; data?: unknown }) =>
           console.log("error", error),
@@ -76,6 +78,8 @@ export default function ConnectWalletStep({
             <ConnectWallet
               setIsConnected={setIsConnected}
               setProviderReq={setProviderReq}
+              setAccount={setAccount}
+              setIsMainnet={setIsMainnet}
             />
           </>
         ) : !isMainnet ? (

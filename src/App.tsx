@@ -21,15 +21,11 @@ import { isValidBump } from "utils/isValidBump";
 import { isIpfsHash } from "utils/isIpfsHash";
 import { isValidEns } from "utils/isValidEns";
 import { newTabProps } from "utils/newTabProps";
-import {
-  parseIpfsApiUrls,
-  readIpfsApiUrls,
-  writeIpfsApiUrls,
-} from "./settings";
+import { parseIpfsUrls, readIpfsApiUrls, writeIpfsApiUrls } from "./settings";
 // Imgs
 import metamaskIcon from "./img/metamask-white.png";
 import { RequestStatus, RepoAddresses, Manifest, FormField } from "types";
-import { IPFS_GATEWAY, SDK_INSTALL_URL } from "params";
+import { DEFAULT_IPFS_GATEWAY, SDK_INSTALL_URL } from "params";
 import { signRelease } from "utils/signRelease";
 import { fetchReleaseSignature } from "utils/fetchRelease";
 
@@ -125,12 +121,12 @@ export function App() {
   const onNewManifestHash = useMemo(
     () =>
       debounce(async (hash: string) => {
-        fetchManifestMem(hash, IPFS_GATEWAY)
+        fetchManifestMem(hash, DEFAULT_IPFS_GATEWAY)
           .then((manifest) => setManifest({ ...manifest, hash }))
           .catch((e) => console.error(`Error fetching manifest ${hash}`, e));
 
         try {
-          await fetchReleaseSignature(hash, IPFS_GATEWAY);
+          await fetchReleaseSignature(hash, DEFAULT_IPFS_GATEWAY);
           setIsSigned(true);
         } catch (e) {
           console.error(`Error fetching release ${hash}`, e);
@@ -214,7 +210,7 @@ export function App() {
       // newReleaseHash is not prefixed by '/ipfs/'
       const newReleaseHash = await signRelease(
         releaseHash,
-        parseIpfsApiUrls(ipfsApiUrls),
+        parseIpfsUrls(ipfsApiUrls),
       );
       setSignReq({ result: newReleaseHash });
       setSignedReleaseHash(`/ipfs/${newReleaseHash}`);

@@ -7,7 +7,7 @@ declare global {
 }
 
 export function SwitchNetwork({
-  setIsMainnet: setIsMainnet,
+  setIsMainnet,
 }: {
   setIsMainnet: React.Dispatch<React.SetStateAction<boolean>>;
 }) {

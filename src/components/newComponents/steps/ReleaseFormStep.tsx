@@ -15,7 +15,7 @@ import { fetchManifest } from "utils/fetchManifest";
 import { resolveDnpName } from "utils/resolveDnpName";
 import { getLatestVersion } from "utils/getLatestVersion";
 import { debounce } from "lodash";
-import { IPFS_GATEWAY } from "params";
+import { DEFAULT_IPFS_GATEWAY } from "params";
 import { fetchReleaseSignature } from "utils/fetchRelease";
 
 interface ReleaseFormProps {
@@ -54,12 +54,12 @@ export default function ReleaseForm({
   const onNewManifestHash = useMemo(
     () =>
       debounce(async (hash: string) => {
-        fetchManifestMem(hash, IPFS_GATEWAY)
+        fetchManifestMem(hash, DEFAULT_IPFS_GATEWAY)
           .then((manifest) => setManifest({ ...manifest, hash }))
           .catch((e) => console.error(`Error fetching manifest ${hash}`, e));
 
         try {
-          await fetchReleaseSignature(hash, IPFS_GATEWAY);
+          await fetchReleaseSignature(hash, DEFAULT_IPFS_GATEWAY);
         } catch (e) {
           console.error(`Error fetching release ${hash}`, e);
         }
@@ -235,9 +235,10 @@ export default function ReleaseForm({
         onClick={() => setStepper((prevState) => prevState + 1)}
         disabled={
           errors.length > 0 ||
-          dnpName === "" ||
-          version === "" ||
-          releaseHash === ""
+          !dnpName ||
+          !version ||
+          !releaseHash ||
+          !repoAddresses
         }
       >
         Next
