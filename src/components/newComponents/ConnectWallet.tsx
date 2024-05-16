@@ -23,24 +23,32 @@ export default function ConnectWallet({
         const addresses: string[] = await window.ethereum.request({
           method: "eth_accounts",
         });
+
+        //if wallet already connected
         if (addresses.length > 0) {
+          setProviderReq({ loading: true });
           setIsConnected(true);
+          setProviderReq({
+            result: new ethers.BrowserProvider(window.ethereum),
+          });
           try {
             const chainId = await window.ethereum.request({
               method: "eth_chainId",
             });
 
+            setAccount(addresses[0]);
             if (chainId === "0x1") {
               setIsMainnet(true);
             }
           } catch (error) {
             console.error("Error fetching chainId:", error);
           }
-          setAccount(addresses[0]);
+
+          // ask for permissions if not connected already
         } else {
           try {
             setProviderReq({ loading: true });
-            // check is connected window.ethereum
+
             await window.ethereum.request({
               method: "wallet_requestPermissions",
               params: [{ eth_accounts: {} }],

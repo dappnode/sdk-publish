@@ -49,6 +49,7 @@ export default function ConnectWalletStep({
     };
 
     if (isConnected) fetchChain();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected]);
 
   useEffect(() => {
@@ -66,6 +67,7 @@ export default function ConnectWalletStep({
           console.log("error", error),
         );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMainnet]);
 
   return (

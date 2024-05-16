@@ -22,7 +22,7 @@ interface SignAndPublishProps {
   devAddress: string;
   version: string;
   releaseHash: string;
-  provider: ethers.BrowserProvider | undefined;
+  provider: any;
   account: string | null;
   developerAddress: string;
   publishReqStatus: RequestStatus<string>;
@@ -152,7 +152,12 @@ export default function SignAndPublish({
   }
 
   return (
-    <BaseCard hasBack={() => setStepper((prevState) => prevState - 1)}>
+    <BaseCard
+      hasBack={() => {
+        setStepper((prevState) => prevState - 1);
+        setPublishReqStatus({});
+      }}
+    >
       <Title title={"4. Sign and Publish"} />
       <p>Double-check the release details to sign and publish!</p>
 
@@ -185,23 +190,42 @@ export default function SignAndPublish({
           </>
         );
       })}
-      {publishReqStatus.error && <ErrorView error={publishReqStatus.error} />}
-      {publishReqStatus.loading && (
-        <LoadingView steps={["Publishing release transaction"]} />
-      )}
+
       {!isAllowedAddress ? (
         <div className="text-error-red">
           The address {account}is not allowed to publish in this repo. Change to
           an allowed account to continue
         </div>
       ) : !isSigned ? (
-        <p className="text-center text-success-green">
-          The release is ready to be signed
-        </p>
+        <>
+          <p className="text-center text-success-green">
+            The release is ready to be signed
+          </p>
+          {signReq.loading && <LoadingView steps={["Signing release"]} />}
+          {signReq.error && (
+            <div className="text-sm text-error-red">
+              Error while trying to sign the release. For more information check
+              the console
+              {
+                <div className="mt-3 overflow-scroll text-xs">
+                  <ErrorView error={signReq.error} />
+                </div>
+              }
+            </div>
+          )}
+        </>
       ) : (
-        <p className="text-center text-success-green">
-          The release is ready to be published
-        </p>
+        <>
+          <p className="text-center text-success-green">
+            The release is ready to be published
+          </p>
+          {publishReqStatus.error && (
+            <ErrorView error={publishReqStatus.error} />
+          )}
+          {publishReqStatus.loading && (
+            <LoadingView steps={["Publishing release transaction"]} />
+          )}
+        </>
       )}
       {!isSigned ? (
         <Button

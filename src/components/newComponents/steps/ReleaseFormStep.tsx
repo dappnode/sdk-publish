@@ -45,49 +45,53 @@ export default function ReleaseForm({
 }: ReleaseFormProps) {
   const [repoAddresses, setRepoAddresses] = useState<RepoAddresses>();
   const [latestVersion, setLatestVersion] = useState<string>();
-  const [manifest, setManifest] = useState<Manifest & { hash: string }>();
-
-  const fetchManifestMem = memoizee(fetchManifest, { promise: true });
-  const resolveDnpNameMem = memoizee(resolveDnpName, { promise: true });
-  const getLatestVersionMem = memoizee(getLatestVersion, { promise: true });
-
-  const onNewManifestHash = useMemo(
-    () =>
-      debounce(async (hash: string) => {
-        fetchManifestMem(hash, DEFAULT_IPFS_GATEWAY)
-          .then((manifest) => setManifest({ ...manifest, hash }))
-          .catch((e) => console.error(`Error fetching manifest ${hash}`, e));
-
-        try {
-          await fetchReleaseSignature(hash, DEFAULT_IPFS_GATEWAY);
-        } catch (e) {
-          console.error(`Error fetching release ${hash}`, e);
-        }
-      }, 500),
-    [],
-  );
-  const onNewDnpName = useMemo(
-    () =>
-      debounce((dnpName: string, provider: ethers.Provider) => {
-        console.log("ON NEW DNP", dnpName);
-        resolveDnpNameMem(dnpName, provider)
-          .then(setRepoAddresses)
-          .catch((e) => console.error(`Error resolving dnpName ${dnpName}`, e));
-        getLatestVersionMem(dnpName, provider)
-          .then(setLatestVersion)
-          .catch((e) => console.error(`Error get latest ver ${dnpName}`, e));
-      }, 500),
-    [],
-  );
+  const [manifest, setManifest] = useState<
+    (Manifest & { hash: string }) | null
+  >();
+  console.log(dnpName);
 
   useEffect(() => {
-    if (releaseHash) onNewManifestHash(releaseHash);
-  }, [releaseHash, onNewManifestHash]);
+    async function checkManifest(hash: string) {
+      console.log(`errors lenght: ${errors.length}`);
+      try {
+        const manifest = await fetchManifest(hash, DEFAULT_IPFS_GATEWAY);
+        setManifest({ ...manifest, hash });
+      } catch (e) {
+        console.error(`Error fetching manifest ${hash}`, e);
+        setManifest(null);
+      }
+    }
+
+    checkManifest(releaseHash);
+  }, [releaseHash]);
 
   useEffect(() => {
-    if (dnpName && isValidEns(dnpName) && provider)
-      onNewDnpName(dnpName, provider);
-  }, [dnpName, provider, onNewDnpName]);
+    async function checkDnpName(repoName: string, provider: ethers.Provider) {
+      try {
+        const repoAddress = await resolveDnpName(repoName, provider);
+        setRepoAddresses(repoAddress);
+      } catch (e) {
+        console.error(`Error resolving dnpName ${repoName}`, e);
+      }
+    }
+
+    if (isValidEns(dnpName)) checkDnpName(dnpName, provider);
+  }, [dnpName, provider]);
+
+  useEffect(() => {
+    async function checkLatestVersion(repoName: string, provider: any) {
+      try {
+        const latestVersion = await getLatestVersion(repoName, provider);
+        setLatestVersion(latestVersion);
+      } catch (e) {
+        console.error(`Error getting latest version of ${repoName}`, e);
+      }
+    }
+
+    if (semver.valid(version) && isValidEns(dnpName))
+      checkLatestVersion(dnpName, provider);
+  }, [dnpName, version, provider]);
+
   // Form input variables
   const fields: FormField[] = [
     {
@@ -161,22 +165,24 @@ export default function ReleaseForm({
             ? { isValid: true, message: "Valid ipfs hash" }
             : { isValid: false, message: "Invalid ipfs hash" }
           : null,
-        manifest
-          ? manifest.name && manifest.version
-            ? manifest.name === dnpName && manifest.version === version
-              ? { isValid: true, message: "Manifest successfully verified" }
+        releaseHash
+          ? manifest
+            ? manifest.name && manifest.version
+              ? manifest.name === dnpName && manifest.version === version
+                ? { isValid: true, message: "Manifest successfully verified" }
+                : {
+                    isValid: false,
+                    message: `Manifest verification failed. This manifest is for ${manifest.name} @ ${manifest.version}`,
+                  }
               : {
                   isValid: false,
-                  message: `Manifest verification failed. This manifest is for ${manifest.name} @ ${manifest.version}`,
+                  message: `Manifest's name or version not found in this hash`,
                 }
             : {
                 isValid: false,
-                message: `Manifest's name or version not found in this hash`,
+                message: `Hash or manifest not found`,
               }
-          : {
-              isValid: false,
-              message: `Hash or manifest not found`,
-            },
+          : null,
       ],
     },
   ];
