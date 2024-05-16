@@ -1,28 +1,29 @@
 import Header from "components/newComponents/Header";
-import CheckAndPublish from "components/newComponents/steps/CheckAndPublishStep";
-import ConnectAndSignStep from "components/newComponents/steps/ConnectAndSignStep";
+import ConnectWalletStep from "components/newComponents/steps/ConnectWalletStep";
 import IntroductionStep from "components/newComponents/steps/IntroductionStep";
 import IpfsSettingsStep from "components/newComponents/steps/IpfsSettingsStep";
 import ReleaseFormStep from "components/newComponents/steps/ReleaseFormStep";
 import ReleasePublished from "components/newComponents/steps/ReleasePublished";
+import SignAndPublish from "components/newComponents/steps/SignAndPublishStep";
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
-import { readIpfsApiUrls } from "settings";
+import { readIpfsApiUrls, readIpfsGatewayUrls } from "settings";
 import { RequestStatus } from "types";
 import { parseUrlQuery } from "utils/urlQuery";
 
 export function App() {
   const [stepper, setStepper] = useState(0);
 
+  //Release states
   const [dnpName, setDnpName] = useState("");
   const [version, setVersion] = useState("");
   const [developerAddress, setDeveloperAddress] = useState("");
   const [releaseHash, setReleaseHash] = useState("");
-  const [signedReleaseHash, setSignedReleaseHash] = useState<string | null>(
-    null,
-  );
 
-  const [metamaskAddress, setMetamaskAddress] = useState("");
+  //Wallet states
+  const [isConnected, setIsConnected] = useState(false);
+  const [isMainnet, setIsMainnet] = useState(false);
+  const [account, setAccount] = useState<string | null>(null);
 
   const [providerReq, setProviderReq] = useState<
     RequestStatus<ethers.BrowserProvider>
@@ -32,13 +33,11 @@ export function App() {
     RequestStatus<string>
   >({});
 
-  const [isAllowedAddress, setIsAllowedAddress] = useState<boolean | null>(
-    null,
-  );
   // Precomputed variables
   const provider = providerReq.result;
 
   const [ipfsApiUrls, setIpfsApiUrls] = useState(readIpfsApiUrls());
+  const [ipfsGatewayUrls, setIpfsGatewayUrls] = useState(readIpfsGatewayUrls());
 
   // Set state based on URL parameters
   useEffect(() => {
@@ -56,31 +55,92 @@ export function App() {
     }
   }, []);
 
+  useEffect(() => {
+    //window ethereum EIP: https://eips.ethereum.org/EIPS/eip-1193
+    window.ethereum.on("chainChanged", (chainId: string) => {
+      console.log("event chainChanged: ", chainId);
+      window.location.reload();
+    });
+    window.ethereum.on("accountsChanged", (accounts: Array<string>) => {
+      console.log("event accountsChanged");
+      console.log("accounts", accounts);
+      setAccount(accounts[0]);
+    });
+
+    window.ethereum.on(
+      "message",
+      (message: { type: string; data: unknown }) => {
+        console.log("event message", message);
+      },
+    );
+    window.ethereum.on(
+      "disconnect",
+      (error: { message: string; code: number; data?: unknown }) => {
+        console.log("disconnect", error);
+        setIsConnected(false);
+      },
+    );
+    // window.ethereum.on("connect", (connectInfo: { chainId: string }) => {
+    //   console.log("event connect", connectInfo);
+    //   setIsConnected(true);
+    //   window.ethereum
+    //     .request({ method: "eth_requestAccounts" })
+    //     .then((accounts: string[]) => {
+    //       console.log("accounts", accounts);
+    //       // store it in state
+    //       console.log(`1`);
+    //       setAccount(accounts[0]);
+    //     })
+    //     .catch((error: { message: string; code: number; data?: unknown }) =>
+    //       console.log("error", error),
+    //     );
+    //   // 0x1 is mainnet's chainId in hex
+    //   console.log(`connectInfo.chainId:`);
+    //   console.log(connectInfo.chainId);
+    //   if (connectInfo.chainId === "0x1") setIsMainnet(true);
+    // });
+  }, []);
+
   function Steps() {
     switch (stepper) {
       // STEPS:
       // 0. Introduction
-      // 1. Release Form
-      // 2. Connect Wallet and sign
-      // 3. Edit IPFS settings
+      // 1. Connect wallet
+      // 2. Edit IPFS settings
+      // 3. ReleaseDetails and sign
       // 4. check and publish
-      // 4. release published
+      // 5. release published
       case 0:
-        return (
-          <IntroductionStep
-            stepper={{
-              state: stepper,
-              setter: setStepper,
-            }}
-          />
-        );
+        return <IntroductionStep setStepper={setStepper} />;
       case 1:
         return (
+          <ConnectWalletStep
+            setStepper={setStepper}
+            account={account}
+            setAccount={setAccount}
+            isMainnet={isMainnet}
+            setIsMainnet={setIsMainnet}
+            isConnected={isConnected}
+            setIsConnected={setIsConnected}
+            provider={window.ethereum}
+            setProviderReq={setProviderReq}
+          />
+        );
+
+      case 2:
+        return (
+          <IpfsSettingsStep
+            setStepper={setStepper}
+            ipfsApiUrls={ipfsApiUrls}
+            setIpfsApiUrls={setIpfsApiUrls}
+            ipfsGatewayUrls={ipfsGatewayUrls}
+            setIpfsGatewayUrls={setIpfsGatewayUrls}
+          />
+        );
+      case 3:
+        return (
           <ReleaseFormStep
-            stepper={{
-              state: stepper,
-              setter: setStepper,
-            }}
+            setStepper={setStepper}
             dnpName={dnpName}
             setDnpName={setDnpName}
             developerAddress={developerAddress}
@@ -89,66 +149,29 @@ export function App() {
             setVersion={setVersion}
             releaseHash={releaseHash}
             setReleaseHash={setReleaseHash}
-          />
-        );
-      case 2:
-        return (
-          <ConnectAndSignStep
-            stepper={{
-              state: stepper,
-              setter: setStepper,
-            }}
             provider={provider}
-            providerReq={providerReq}
-            setProviderReq={setProviderReq}
-            releaseHash={releaseHash}
-            setSignedReleaseHash={setSignedReleaseHash}
-            metamaskAddress={metamaskAddress}
-            setMetamaskAddress={setMetamaskAddress}
-            isAllowedAddress={isAllowedAddress}
-            setIsAllowedAddress={setIsAllowedAddress}
-            dnpName={dnpName}
-          />
-        );
-      case 3:
-        return (
-          <IpfsSettingsStep
-            stepper={{
-              state: stepper,
-              setter: setStepper,
-            }}
-            ipfsApiUrls={ipfsApiUrls}
-            setIpfsApiUrls={setIpfsApiUrls}
           />
         );
       case 4:
         return (
-          <CheckAndPublish
-            stepper={{
-              state: stepper,
-              setter: setStepper,
-            }}
+          <SignAndPublish
+            setStepper={setStepper}
             dnpName={dnpName}
             devAddress={developerAddress}
             version={version}
             releaseHash={releaseHash}
-            signedReleaseHash={signedReleaseHash!}
             provider={provider}
-            metamaskAddress={metamaskAddress}
+            account={account}
             developerAddress={developerAddress}
-            isAllowedAddress={isAllowedAddress}
-            setIsAllowedAddress={setIsAllowedAddress}
             publishReqStatus={publishReqStatus}
             setPublishReqStatus={setPublishReqStatus}
+            ipfsApiUrls={ipfsApiUrls}
           />
         );
-      case 5:
+      case 6:
         return (
           <ReleasePublished
-            stepper={{
-              state: stepper,
-              setter: setStepper,
-            }}
+            setStepper={setStepper}
             publishReqStatus={publishReqStatus}
           />
         );
@@ -156,7 +179,7 @@ export function App() {
   }
   return (
     <div className="flex h-screen w-screen flex-col overflow-y-clip">
-      <Header />
+      <Header account={account} />
       <div className=" flex h-full flex-col items-center bg-background-color">
         {Steps()}
       </div>

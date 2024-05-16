@@ -25,9 +25,6 @@
 /* 
   TEXT STYLES 
 */
-body {
-  font-family: "mode G", sans-serif !important;
-}
 
 /* Reset margins and underlying sizes. 
    The height 100% is necessary so child elements have a reference to be full width

@@ -9,7 +9,7 @@ interface linkProps {
 export default function Link({ href, children }: linkProps) {
   return (
     <a
-      className="text-text-purple hover:text-text-purple"
+      className="font-modeG text-text-purple hover:text-text-purple"
       href={href}
       {...newTabProps}
     >
