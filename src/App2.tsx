@@ -166,6 +166,7 @@ export function App() {
             publishReqStatus={publishReqStatus}
             setPublishReqStatus={setPublishReqStatus}
             ipfsApiUrls={ipfsApiUrls}
+            ipfsGatewayUrls={ipfsGatewayUrls}
           />
         );
       case 6:

@@ -11,7 +11,7 @@ export default function BaseCard({
   children,
 }: baseCardProps) {
   return (
-    <div className="relative mt-[6%] flex min-h-min w-2/5 flex-col">
+    <div className="relative mt-[6%] flex min-h-min w-4/5 flex-col lg:w-2/5">
       {hasBack && <BackBtn onClick={() => hasBack()} />}
       <div className="flex flex-col gap-5 rounded-3xl bg-white p-9">
         {children}

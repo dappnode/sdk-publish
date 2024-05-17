@@ -1,22 +1,19 @@
 import { ethers } from "ethers";
-import React, { useEffect, useMemo, useState } from "react";
+import { DEFAULT_IPFS_GATEWAY } from "params";
+import React, { useEffect, useState } from "react";
 import semver from "semver";
 import { FormField, Manifest, RepoAddresses } from "types";
+import { fetchManifest } from "utils/fetchManifest";
+import { getLatestVersion } from "utils/getLatestVersion";
 import { isIpfsHash } from "utils/isIpfsHash";
+import { isValidBump } from "utils/isValidBump";
 import { isValidEns } from "utils/isValidEns";
 import { notNullish } from "utils/notNullish";
+import { resolveDnpName } from "utils/resolveDnpName";
 import BaseCard from "../BaseCard";
 import Button from "../Button";
 import Input from "../Input";
 import Title from "../Title";
-import { isValidBump } from "utils/isValidBump";
-import memoizee from "memoizee";
-import { fetchManifest } from "utils/fetchManifest";
-import { resolveDnpName } from "utils/resolveDnpName";
-import { getLatestVersion } from "utils/getLatestVersion";
-import { debounce } from "lodash";
-import { DEFAULT_IPFS_GATEWAY } from "params";
-import { fetchReleaseSignature } from "utils/fetchRelease";
 
 interface ReleaseFormProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
@@ -63,6 +60,7 @@ export default function ReleaseForm({
     }
 
     checkManifest(releaseHash);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [releaseHash]);
 
   useEffect(() => {

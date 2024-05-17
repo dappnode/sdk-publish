@@ -6,15 +6,15 @@ import Title from "../Title";
 
 import { ErrorView } from "components/ErrorView";
 import { LoadingView } from "components/LoadingView";
-import { ethers } from "ethers";
 import memoizee from "memoizee";
+import { DEFAULT_IPFS_API, DEFAULT_IPFS_GATEWAY } from "params";
 import { parseIpfsUrls } from "settings";
 import { apmRepoIsAllowed } from "utils/apmRepoIsAllowed";
 import { executePublishTx } from "utils/executePublishTx";
+import { fetchReleaseSignature } from "utils/fetchRelease";
 import { resolveDnpName } from "utils/resolveDnpName";
 import { signRelease } from "utils/signRelease";
 import Button from "../Button";
-import { DEFAULT_IPFS_API } from "params";
 
 interface SignAndPublishProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
@@ -30,6 +30,7 @@ interface SignAndPublishProps {
     React.SetStateAction<RequestStatus<string>>
   >;
   ipfsApiUrls: string;
+  ipfsGatewayUrls: string;
 }
 
 export default function SignAndPublish({
@@ -44,6 +45,7 @@ export default function SignAndPublish({
   publishReqStatus,
   setPublishReqStatus,
   ipfsApiUrls,
+  ipfsGatewayUrls,
 }: SignAndPublishProps) {
   const [signedReleaseHash, setSignedReleaseHash] = useState<string>("");
 
@@ -101,6 +103,10 @@ export default function SignAndPublish({
       const newReleaseHash = await signRelease(
         releaseHash,
         parseIpfsUrls(ipfsApiUrls ? ipfsApiUrls : DEFAULT_IPFS_API),
+      );
+      await fetchReleaseSignature(
+        newReleaseHash,
+        ipfsGatewayUrls ? ipfsGatewayUrls : DEFAULT_IPFS_GATEWAY,
       );
       setSignReq({ result: newReleaseHash });
       setSignedReleaseHash(`/ipfs/${newReleaseHash}`);
@@ -220,7 +226,15 @@ export default function SignAndPublish({
             The release is ready to be published
           </p>
           {publishReqStatus.error && (
-            <ErrorView error={publishReqStatus.error} />
+            <div className="text-sm text-error-red">
+              Error while trying to publish the release. For more information
+              check the console
+              {
+                <div className="mt-3 overflow-scroll text-xs">
+                  <ErrorView error={publishReqStatus.error} />
+                </div>
+              }
+            </div>
           )}
           {publishReqStatus.loading && (
             <LoadingView steps={["Publishing release transaction"]} />

@@ -49,11 +49,11 @@ export default function IpfsSettingsStep({
       <div className="flex flex-col gap-1">
         <div className="text-text-purple">IPFS Gateway URLs</div>
         <p className="text-sm">
-          Fulfill with multiple Gateway URLs to ensure that the IPFS hash has
+          Fulfill with a Gateway URLs to ensure that the IPFS hash has
           propagated or not.
         </p>
         <p></p>
-        <textarea
+        <input
           className={
             " rounded-2xl bg-background-color p-3  focus:outline-focused-purple "
           }
