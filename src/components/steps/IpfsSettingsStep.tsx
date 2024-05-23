@@ -40,14 +40,13 @@ export default function IpfsSettingsStep({
           className={
             " rounded-2xl bg-background-color p-3  focus:outline-focused-purple "
           }
-          placeholder={DEFAULT_IPFS_API}
+          placeholder="https://api.ipfs.dappnode.io/ &#13;&#10;http://your-own-ipfs-node:5001"
           value={ipfsApiUrls}
           onChange={(e) => setIpfsApiUrls(e.target.value)}
         />{" "}
       </div>
-      {/* // TODO: IPFS gateway logic */}
       <div className="flex flex-col gap-1">
-        <div className="text-text-purple">IPFS Gateway URLs</div>
+        <div className="text-text-purple">IPFS Gateway URL</div>
         <p className="text-sm">
           Fulfill with a Gateway URLs to ensure that the IPFS hash has
           propagated or not.
