@@ -8,14 +8,14 @@ export function writeIpfsApiUrls(ipfsApiUrls: string): void {
   localStorage.setItem(ipfsApiUrlsKey, ipfsApiUrls);
 }
 
-const ipfsGatewayUrlsKey = "ipfs-gateway-urls";
+const ipfsGatewayUrlKey = "ipfs-gateway-urls";
 
-export function readIpfsGatewayUrls(): string {
-  return localStorage.getItem(ipfsGatewayUrlsKey) ?? "";
+export function readIpfsGatewayUrl(): string {
+  return localStorage.getItem(ipfsGatewayUrlKey) ?? "";
 }
 
-export function writeIpfsGatewayUrls(ipfsGatewayUrls: string): void {
-  localStorage.setItem(ipfsGatewayUrlsKey, ipfsGatewayUrls);
+export function writeIpfsGatewayUrl(ipfsGatewayUrl: string): void {
+  localStorage.setItem(ipfsGatewayUrlKey, ipfsGatewayUrl);
 }
 /**
  * `ipfsApiUrls` is a multiline newline separated list of IPFS URLs

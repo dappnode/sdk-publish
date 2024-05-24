@@ -6,8 +6,9 @@ import ReleaseFormStep from "components/steps/ReleaseFormStep";
 import ReleasePublished from "components/steps/ReleasePublished";
 import SignAndPublish from "components/steps/SignAndPublishStep";
 import { ethers } from "ethers";
+import { DEFAULT_IPFS_API, DEFAULT_IPFS_GATEWAY } from "params";
 import React, { useEffect, useState } from "react";
-import { readIpfsApiUrls, readIpfsGatewayUrls } from "settings";
+import { readIpfsApiUrls, readIpfsGatewayUrl } from "settings";
 import { RequestStatus } from "types";
 import { parseUrlQuery } from "utils/urlQuery";
 
@@ -36,8 +37,12 @@ export function App() {
   // Precomputed variables
   const provider = providerReq.result;
 
-  const [ipfsApiUrls, setIpfsApiUrls] = useState(readIpfsApiUrls());
-  const [ipfsGatewayUrls, setIpfsGatewayUrls] = useState(readIpfsGatewayUrls());
+  const [ipfsApiUrls, setIpfsApiUrls] = useState(
+    readIpfsApiUrls() === "" ? DEFAULT_IPFS_API : readIpfsApiUrls(),
+  );
+  const [ipfsGatewayUrl, setIpfsGatewayUrl] = useState(
+    readIpfsGatewayUrl() === "" ? DEFAULT_IPFS_GATEWAY : readIpfsGatewayUrl(),
+  );
 
   // Set state based on URL parameters
   useEffect(() => {
@@ -56,49 +61,83 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    //window ethereum EIP: https://eips.ethereum.org/EIPS/eip-1193
-    window.ethereum.on("chainChanged", (chainId: string) => {
-      console.log("event chainChanged: ", chainId);
-      window.location.reload();
-    });
-    window.ethereum.on("accountsChanged", (accounts: Array<string>) => {
-      console.log("event accountsChanged");
-      console.log("accounts", accounts);
-      setAccount(accounts[0]);
-    });
+    //Check if wallet already connected
+    const getWallet = async () => {
+      const addresses: string[] = await window.ethereum.request({
+        method: "eth_accounts",
+      });
+      console.log(`addresses is ${addresses}`);
+      if (addresses.length > 0) {
+        setProviderReq({ loading: true });
+        setIsConnected(true);
+        setProviderReq({
+          result: new ethers.BrowserProvider(window.ethereum),
+          loading: false,
+        });
+        try {
+          const chainId = await window.ethereum.request({
+            method: "eth_chainId",
+          });
 
-    window.ethereum.on(
-      "message",
-      (message: { type: string; data: unknown }) => {
-        console.log("event message", message);
-      },
-    );
-    window.ethereum.on(
-      "disconnect",
-      (error: { message: string; code: number; data?: unknown }) => {
-        console.log("disconnect", error);
-        setIsConnected(false);
-      },
-    );
-    // window.ethereum.on("connect", (connectInfo: { chainId: string }) => {
-    //   console.log("event connect", connectInfo);
-    //   setIsConnected(true);
-    //   window.ethereum
-    //     .request({ method: "eth_requestAccounts" })
-    //     .then((accounts: string[]) => {
-    //       console.log("accounts", accounts);
-    //       // store it in state
-    //       console.log(`1`);
-    //       setAccount(accounts[0]);
-    //     })
-    //     .catch((error: { message: string; code: number; data?: unknown }) =>
-    //       console.log("error", error),
-    //     );
-    //   // 0x1 is mainnet's chainId in hex
-    //   console.log(`connectInfo.chainId:`);
-    //   console.log(connectInfo.chainId);
-    //   if (connectInfo.chainId === "0x1") setIsMainnet(true);
-    // });
+          setAccount(addresses[0]);
+          if (chainId === "0x1") {
+            setIsMainnet(true);
+            setStepper(2);
+          }
+        } catch (e) {
+          setProviderReq({ error: e as Error, loading: false });
+          console.error("Error fetching chainId:", e);
+        }
+      }
+    };
+
+    if (window.ethereum) {
+      getWallet();
+      //window ethereum EIP: https://eips.ethereum.org/EIPS/eip-1193
+      window.ethereum.on("chainChanged", (chainId: string) => {
+        console.log("event chainChanged: ", chainId);
+        window.location.reload();
+      });
+      window.ethereum.on("accountsChanged", (accounts: Array<string>) => {
+        console.log("event accountsChanged");
+        console.log("accounts", accounts);
+        setAccount(accounts[0]);
+      });
+
+      // connect, disconnect and message events are not tested due couldn't be triggered
+      window.ethereum.on(
+        "message",
+        (message: { type: string; data: unknown }) => {
+          console.log("event message", message);
+        },
+      );
+      window.ethereum.on(
+        "disconnect",
+        (error: { message: string; code: number; data?: unknown }) => {
+          console.log("disconnect", error);
+          setIsConnected(false);
+        },
+      );
+      window.ethereum.on("connect", (connectInfo: { chainId: string }) => {
+        console.log("event connect", connectInfo);
+        setIsConnected(true);
+        window.ethereum
+          .request({ method: "eth_requestAccounts" })
+          .then((accounts: string[]) => {
+            console.log("accounts", accounts);
+            // store it in state
+            console.log(`1`);
+            setAccount(accounts[0]);
+          })
+          .catch((error: { message: string; code: number; data?: unknown }) =>
+            console.log("error", error),
+          );
+        // 0x1 is mainnet's chainId in hex
+        console.log(`connectInfo.chainId:`);
+        console.log(connectInfo.chainId);
+        if (connectInfo.chainId === "0x1") setIsMainnet(true);
+      });
+    }
   }, []);
 
   function Steps() {
@@ -123,6 +162,7 @@ export function App() {
             isConnected={isConnected}
             setIsConnected={setIsConnected}
             provider={window.ethereum}
+            providerReq={providerReq}
             setProviderReq={setProviderReq}
           />
         );
@@ -133,8 +173,8 @@ export function App() {
             setStepper={setStepper}
             ipfsApiUrls={ipfsApiUrls}
             setIpfsApiUrls={setIpfsApiUrls}
-            ipfsGatewayUrls={ipfsGatewayUrls}
-            setIpfsGatewayUrls={setIpfsGatewayUrls}
+            ipfsGatewayUrl={ipfsGatewayUrl}
+            setIpfsGatewayUrl={setIpfsGatewayUrl}
           />
         );
       case 3:
@@ -166,7 +206,7 @@ export function App() {
             publishReqStatus={publishReqStatus}
             setPublishReqStatus={setPublishReqStatus}
             ipfsApiUrls={ipfsApiUrls}
-            ipfsGatewayUrls={ipfsGatewayUrls}
+            ipfsGatewayUrl={ipfsGatewayUrl}
           />
         );
       case 6:

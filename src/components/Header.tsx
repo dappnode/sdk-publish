@@ -1,6 +1,5 @@
 import React from "react";
 import dappnodeLogo from "img/dappnode-logo-only.png";
-import Button from "./Button";
 
 export default function Header({ account }: { account: string | null }) {
   return (

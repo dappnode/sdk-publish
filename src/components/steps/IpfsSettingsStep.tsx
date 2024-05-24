@@ -1,27 +1,26 @@
 import React, { useEffect } from "react";
+import { writeIpfsApiUrls, writeIpfsGatewayUrl } from "settings";
 import BaseCard from "../BaseCard";
-import Title from "../Title";
 import Button from "../Button";
-import { writeIpfsApiUrls, writeIpfsGatewayUrls } from "settings";
-import { DEFAULT_IPFS_GATEWAY, DEFAULT_IPFS_API } from "params";
+import Title from "../Title";
 
 interface IpfsSettingsStepProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
   ipfsApiUrls: string;
   setIpfsApiUrls: React.Dispatch<React.SetStateAction<string>>;
-  ipfsGatewayUrls: string;
-  setIpfsGatewayUrls: React.Dispatch<React.SetStateAction<string>>;
+  ipfsGatewayUrl: string;
+  setIpfsGatewayUrl: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function IpfsSettingsStep({
   setStepper,
   ipfsApiUrls,
   setIpfsApiUrls,
-  ipfsGatewayUrls,
-  setIpfsGatewayUrls,
+  ipfsGatewayUrl,
+  setIpfsGatewayUrl,
 }: IpfsSettingsStepProps) {
   useEffect(() => writeIpfsApiUrls(ipfsApiUrls), [ipfsApiUrls]);
-  useEffect(() => writeIpfsGatewayUrls(ipfsGatewayUrls), [ipfsGatewayUrls]);
+  useEffect(() => writeIpfsGatewayUrl(ipfsGatewayUrl), [ipfsGatewayUrl]);
   return (
     <BaseCard hasBack={() => setStepper((prevState) => prevState - 1)}>
       <Title title={"2. Edit IPFS settings"} />
@@ -40,7 +39,7 @@ export default function IpfsSettingsStep({
           className={
             " rounded-2xl bg-background-color p-3  focus:outline-focused-purple "
           }
-          placeholder="https://api.ipfs.dappnode.io/ &#13;&#10;http://your-own-ipfs-node:5001"
+          placeholder="https://some-ipfs-api &#13;&#10;http://your-own-ipfs-node:5001"
           value={ipfsApiUrls}
           onChange={(e) => setIpfsApiUrls(e.target.value)}
         />{" "}
@@ -56,9 +55,9 @@ export default function IpfsSettingsStep({
           className={
             " rounded-2xl bg-background-color p-3  focus:outline-focused-purple "
           }
-          placeholder={DEFAULT_IPFS_GATEWAY}
-          value={ipfsGatewayUrls}
-          onChange={(e) => setIpfsGatewayUrls(e.target.value)}
+          placeholder="https://some-ipfs-gateway"
+          value={ipfsGatewayUrl}
+          onChange={(e) => setIpfsGatewayUrl(e.target.value)}
         />
       </div>
       <Button onClick={() => setStepper((prevState) => prevState + 1)}>

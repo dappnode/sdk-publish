@@ -6,6 +6,8 @@ import Title from "../Title";
 import Button from "../Button";
 import { RequestStatus } from "types";
 import { ethers } from "ethers";
+import { LoadingView } from "components/LoadingView";
+import { ErrorView } from "components/ErrorView";
 
 interface ConnectWalletStepProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
@@ -16,6 +18,7 @@ interface ConnectWalletStepProps {
   isMainnet: boolean;
   setIsMainnet: React.Dispatch<React.SetStateAction<boolean>>;
   provider: any;
+  providerReq: RequestStatus<ethers.BrowserProvider>;
   setProviderReq: (
     value: React.SetStateAction<RequestStatus<ethers.BrowserProvider>>,
   ) => void;
@@ -30,6 +33,7 @@ export default function ConnectWalletStep({
   isMainnet,
   setIsMainnet,
   provider,
+  providerReq,
   setProviderReq,
 }: ConnectWalletStepProps) {
   const prevIsMainnet = useRef(isMainnet);
@@ -73,12 +77,28 @@ export default function ConnectWalletStep({
   return (
     <BaseCard hasBack={() => setStepper((prevState) => prevState - 1)}>
       <Title title={"1. Connect your wallet"} />
+
       {provider ? (
         !isConnected ? (
           <>
             <p>To continue it's mandatory to connect your wallet</p>
+            {providerReq.loading && (
+              <LoadingView steps={["Connecting wallet"]} />
+            )}
+            {providerReq.error && (
+              <div className="text-sm text-error-red">
+                Error while trying to connect wallet. For more information check
+                the console
+                {
+                  <div className="mt-3 overflow-scroll text-xs">
+                    <ErrorView error={providerReq.error} />
+                  </div>
+                }
+              </div>
+            )}
             <ConnectWallet
               setIsConnected={setIsConnected}
+              providerReq={providerReq}
               setProviderReq={setProviderReq}
               setAccount={setAccount}
               setIsMainnet={setIsMainnet}

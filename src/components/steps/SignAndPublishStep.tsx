@@ -30,7 +30,7 @@ interface SignAndPublishProps {
     React.SetStateAction<RequestStatus<string>>
   >;
   ipfsApiUrls: string;
-  ipfsGatewayUrls: string;
+  ipfsGatewayUrl: string;
 }
 
 export default function SignAndPublish({
@@ -45,7 +45,7 @@ export default function SignAndPublish({
   publishReqStatus,
   setPublishReqStatus,
   ipfsApiUrls,
-  ipfsGatewayUrls,
+  ipfsGatewayUrl,
 }: SignAndPublishProps) {
   const [signedReleaseHash, setSignedReleaseHash] = useState<string>("");
 
@@ -102,12 +102,9 @@ export default function SignAndPublish({
       // newReleaseHash is not prefixed by '/ipfs/'
       const newReleaseHash = await signRelease(
         releaseHash,
-        parseIpfsUrls(ipfsApiUrls ? ipfsApiUrls : DEFAULT_IPFS_API),
+        parseIpfsUrls(ipfsApiUrls),
       );
-      await fetchReleaseSignature(
-        newReleaseHash,
-        ipfsGatewayUrls ? ipfsGatewayUrls : DEFAULT_IPFS_GATEWAY,
-      );
+      await fetchReleaseSignature(newReleaseHash, ipfsGatewayUrl);
       setSignReq({ result: newReleaseHash });
       setSignedReleaseHash(`/ipfs/${newReleaseHash}`);
       setIsSigned(true);

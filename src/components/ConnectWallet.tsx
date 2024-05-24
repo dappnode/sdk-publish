@@ -5,11 +5,13 @@ import { RequestStatus } from "types";
 
 export default function ConnectWallet({
   setIsConnected,
+  providerReq,
   setProviderReq,
   setIsMainnet,
   setAccount,
 }: {
   setIsConnected: React.Dispatch<React.SetStateAction<boolean>>;
+  providerReq: RequestStatus<ethers.BrowserProvider>;
   setProviderReq: (
     value: React.SetStateAction<RequestStatus<ethers.BrowserProvider>>,
   ) => void;
@@ -30,6 +32,7 @@ export default function ConnectWallet({
           setIsConnected(true);
           setProviderReq({
             result: new ethers.BrowserProvider(window.ethereum),
+            loading: false,
           });
           try {
             const chainId = await window.ethereum.request({
@@ -40,8 +43,9 @@ export default function ConnectWallet({
             if (chainId === "0x1") {
               setIsMainnet(true);
             }
-          } catch (error) {
-            console.error("Error fetching chainId:", error);
+          } catch (e) {
+            setProviderReq({ error: e as Error, loading: false });
+            console.error("Error fetching chainId:", e);
           }
 
           // ask for permissions if not connected already
@@ -56,10 +60,12 @@ export default function ConnectWallet({
             setIsConnected(true);
             setProviderReq({
               result: new ethers.BrowserProvider(window.ethereum),
+              loading: false,
             });
             console.log("Wallet connected");
-          } catch (error) {
-            console.error("Wallet must be connected: ", error);
+          } catch (e) {
+            console.error("Wallet must be connected: ", e);
+            setProviderReq({ error: e as Error, loading: false });
 
             setIsConnected(false);
           }
@@ -69,9 +75,13 @@ export default function ConnectWallet({
       }
     } catch (e) {
       console.error(e);
-      setProviderReq({ error: e as Error });
+      setProviderReq({ error: e as Error, loading: false });
     }
   };
 
-  return <Button onClick={connectWallet}>Connect Wallet</Button>;
+  return (
+    <Button onClick={connectWallet} disabled={providerReq.loading}>
+      Connect Wallet
+    </Button>
+  );
 }
