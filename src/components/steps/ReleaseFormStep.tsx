@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import { DEFAULT_IPFS_GATEWAY } from "params";
 import React, { useEffect, useState } from "react";
 import semver from "semver";
 import { FormField, Manifest, RepoAddresses } from "types";
@@ -26,6 +25,11 @@ interface ReleaseFormProps {
   releaseHash: string;
   setReleaseHash: React.Dispatch<React.SetStateAction<string>>;
   provider: any;
+  ipfsGatewayUrl: string;
+  repoAddresses: RepoAddresses | undefined;
+  setRepoAddresses: React.Dispatch<
+    React.SetStateAction<RepoAddresses | undefined>
+  >;
 }
 
 export default function ReleaseForm({
@@ -39,8 +43,10 @@ export default function ReleaseForm({
   releaseHash,
   setReleaseHash,
   provider,
+  ipfsGatewayUrl,
+  repoAddresses,
+  setRepoAddresses,
 }: ReleaseFormProps) {
-  const [repoAddresses, setRepoAddresses] = useState<RepoAddresses>();
   const [latestVersion, setLatestVersion] = useState<string>();
   const [manifest, setManifest] = useState<
     (Manifest & { hash: string }) | null
@@ -51,7 +57,7 @@ export default function ReleaseForm({
     async function checkManifest(hash: string) {
       console.log(`errors lenght: ${errors.length}`);
       try {
-        const manifest = await fetchManifest(hash, DEFAULT_IPFS_GATEWAY);
+        const manifest = await fetchManifest(hash, ipfsGatewayUrl);
         setManifest({ ...manifest, hash });
       } catch (e) {
         console.error(`Error fetching manifest ${hash}`, e);

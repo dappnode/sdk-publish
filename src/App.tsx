@@ -9,7 +9,7 @@ import { ethers } from "ethers";
 import { DEFAULT_IPFS_API, DEFAULT_IPFS_GATEWAY } from "params";
 import React, { useEffect, useState } from "react";
 import { readIpfsApiUrls, readIpfsGatewayUrl } from "settings";
-import { RequestStatus } from "types";
+import { RepoAddresses, RequestStatus } from "types";
 import { parseUrlQuery } from "utils/urlQuery";
 
 export function App() {
@@ -20,6 +20,8 @@ export function App() {
   const [version, setVersion] = useState("");
   const [developerAddress, setDeveloperAddress] = useState("");
   const [releaseHash, setReleaseHash] = useState("");
+
+  const [repoAddresses, setRepoAddresses] = useState<RepoAddresses>();
 
   //Wallet states
   const [isConnected, setIsConnected] = useState(false);
@@ -190,6 +192,9 @@ export function App() {
             releaseHash={releaseHash}
             setReleaseHash={setReleaseHash}
             provider={provider}
+            ipfsGatewayUrl={ipfsGatewayUrl}
+            repoAddresses={repoAddresses}
+            setRepoAddresses={setRepoAddresses}
           />
         );
       case 4:
@@ -209,11 +214,12 @@ export function App() {
             ipfsGatewayUrl={ipfsGatewayUrl}
           />
         );
-      case 6:
+      case 5:
         return (
           <ReleasePublished
             setStepper={setStepper}
             publishReqStatus={publishReqStatus}
+            repoAddresses={repoAddresses}
           />
         );
     }

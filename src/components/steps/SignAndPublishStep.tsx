@@ -7,7 +7,6 @@ import Title from "../Title";
 import { ErrorView } from "components/ErrorView";
 import { LoadingView } from "components/LoadingView";
 import memoizee from "memoizee";
-import { DEFAULT_IPFS_API, DEFAULT_IPFS_GATEWAY } from "params";
 import { parseIpfsUrls } from "settings";
 import { apmRepoIsAllowed } from "utils/apmRepoIsAllowed";
 import { executePublishTx } from "utils/executePublishTx";
