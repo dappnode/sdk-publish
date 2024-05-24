@@ -168,7 +168,6 @@ export function App() {
             setProviderReq={setProviderReq}
           />
         );
-
       case 2:
         return (
           <IpfsSettingsStep
@@ -224,12 +223,14 @@ export function App() {
         );
     }
   }
+
   return (
     <div className="flex h-screen w-screen flex-col overflow-y-clip">
       <Header account={account} />
       <div className=" flex h-full flex-col items-center bg-background-color">
         {Steps()}
       </div>
+
     </div>
   );
 }
