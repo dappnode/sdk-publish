@@ -9,7 +9,7 @@ export function LoadingView({ steps }: { steps?: string[] }) {
   }, []);
 
   return (
-    <div className="loadingView">
+    <div>
       {steps && (
         <div className="steps text-muted">
           {steps[index] || steps[steps.length - 1]}...

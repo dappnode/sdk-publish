@@ -3,15 +3,21 @@ import { parseIpfsPath } from "./isIpfsHash";
 
 export async function fetchReleaseSignature(
   hash: string,
-  IPFS_GATEWAY: string
+  IPFS_GATEWAY: string,
 ): Promise<string> {
   hash = parseIpfsPath(hash);
 
-  const res = await fetch(`${IPFS_GATEWAY}/ipfs/${hash}/${signatureFileName}`);
+  try {
+    const url = new URL(`/ipfs/${hash}/${signatureFileName}`, IPFS_GATEWAY);
 
-  if (!res.ok) {
-    throw Error(`Error ${res.statusText}`);
+    const res = await fetch(url.toString());
+    console.log(res);
+    if (!res.ok) {
+      throw Error(`Error ${res.statusText}`);
+    }
+
+    return await res.text();
+  } catch (e) {
+    throw Error(`Error: Invalid IPFS gateway. ${e}`);
   }
-
-  return await res.text();
 }

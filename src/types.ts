@@ -29,11 +29,14 @@ export type FormFieldValidation = {
 } | null;
 
 export interface FormField {
-  id: string;
   name: string;
   placeholder: string;
-  help: string;
   value: any;
   onValueChange: (newValue: any) => void;
+  validations?: FormFieldValidation[];
+}
+export interface ReleaseDetails {
+  name: string;
+  value: string;
   validations?: FormFieldValidation[];
 }

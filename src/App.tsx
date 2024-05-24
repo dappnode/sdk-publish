@@ -1,77 +1,37 @@
-import React, { useState, useEffect, useMemo } from "react";
+import Header from "components/Header";
+import ConnectWalletStep from "components/steps/ConnectWalletStep";
+import IntroductionStep from "components/steps/IntroductionStep";
+import IpfsSettingsStep from "components/steps/IpfsSettingsStep";
+import ReleaseFormStep from "components/steps/ReleaseFormStep";
+import ReleasePublished from "components/steps/ReleasePublished";
+import SignAndPublish from "components/steps/SignAndPublishStep";
 import { ethers } from "ethers";
-import memoizee from "memoizee";
-import { debounce } from "lodash";
-import semver from "semver";
-// Components
-import { Title } from "components/Title";
-import { SubTitle } from "components/SubTitle";
-import { Card } from "components/Card";
-import { ErrorView } from "components/ErrorView";
-import { LoadingView } from "components/LoadingView";
-// Utils
+import { DEFAULT_IPFS_API, DEFAULT_IPFS_GATEWAY } from "params";
+import React, { useEffect, useState } from "react";
+import { readIpfsApiUrls, readIpfsGatewayUrl } from "settings";
+import { RepoAddresses, RequestStatus } from "types";
 import { parseUrlQuery } from "utils/urlQuery";
-import { notNullish } from "utils/notNullish";
-import { executePublishTx } from "utils/executePublishTx";
-import { apmRepoIsAllowed } from "utils/apmRepoIsAllowed";
-import { getLatestVersion } from "utils/getLatestVersion";
-import { fetchManifest } from "utils/fetchManifest";
-import { resolveDnpName } from "utils/resolveDnpName";
-import { isValidBump } from "utils/isValidBump";
-import { isIpfsHash } from "utils/isIpfsHash";
-import { isValidEns } from "utils/isValidEns";
-import { newTabProps } from "utils/newTabProps";
-import {
-  parseIpfsApiUrls,
-  readIpfsApiUrls,
-  writeIpfsApiUrls,
-} from "./settings";
-// Imgs
-import metamaskIcon from "./img/metamask-white.png";
-import { RequestStatus, RepoAddresses, Manifest, FormField } from "types";
-import { IPFS_GATEWAY, SDK_INSTALL_URL } from "params";
-import { signRelease } from "utils/signRelease";
-import { fetchReleaseSignature } from "utils/fetchRelease";
-
-const fetchManifestMem = memoizee(fetchManifest, { promise: true });
-const resolveDnpNameMem = memoizee(resolveDnpName, { promise: true });
-const getLatestVersionMem = memoizee(getLatestVersion, { promise: true });
-
-/**
- * Convert to react-boostrap classes
- */
-const getInputClass = ({
-  success,
-  error,
-}: {
-  success?: boolean;
-  error?: boolean;
-}) => (error ? "is-invalid" : success ? "is-valid" : "");
 
 export function App() {
-  // Settings
-  const [showSettings, setShowSettings] = useState(false);
-  const [ipfsApiUrls, setIpfsApiUrls] = useState(readIpfsApiUrls());
-  // Form input variables
+  const [stepper, setStepper] = useState(0);
+
+  //Release states
   const [dnpName, setDnpName] = useState("");
   const [version, setVersion] = useState("");
   const [developerAddress, setDeveloperAddress] = useState("");
-  const [metamaskAddress, setMetamaskAddress] = useState("");
-  const [isAllowedAddress, setIsAllowedAddress] = useState<boolean | null>(
-    null
-  );
   const [releaseHash, setReleaseHash] = useState("");
-  const [signedReleaseHash, setSignedReleaseHash] = useState<string | null>(
-    null
-  );
-  const [manifest, setManifest] = useState<Manifest & { hash: string }>();
-  const [isSigned, setIsSigned] = useState<boolean | null>(null);
+
   const [repoAddresses, setRepoAddresses] = useState<RepoAddresses>();
-  const [latestVersion, setLatestVersion] = useState<string>();
+
+  //Wallet states
+  const [isConnected, setIsConnected] = useState(false);
+  const [isMainnet, setIsMainnet] = useState(false);
+  const [account, setAccount] = useState<string | null>(null);
+
   const [providerReq, setProviderReq] = useState<
     RequestStatus<ethers.BrowserProvider>
   >({});
-  const [signReq, setSignReq] = useState<RequestStatus<string>>({});
+
   const [publishReqStatus, setPublishReqStatus] = useState<
     RequestStatus<string>
   >({});
@@ -79,488 +39,198 @@ export function App() {
   // Precomputed variables
   const provider = providerReq.result;
 
-  // Persist apiUrls settings
-  useEffect(() => writeIpfsApiUrls(ipfsApiUrls), [ipfsApiUrls]);
+  const [ipfsApiUrls, setIpfsApiUrls] = useState(
+    readIpfsApiUrls() === "" ? DEFAULT_IPFS_API : readIpfsApiUrls(),
+  );
+  const [ipfsGatewayUrl, setIpfsGatewayUrl] = useState(
+    readIpfsGatewayUrl() === "" ? DEFAULT_IPFS_GATEWAY : readIpfsGatewayUrl(),
+  );
 
-  /**
-   * Grab the params from the URL and update local state
-   * - Only once every mount, unmount
-   */
+  // Set state based on URL parameters
   useEffect(() => {
     const urlParams = parseUrlQuery(window.location.search);
     console.log("URL params", urlParams);
+
     if (urlParams.r) setDnpName(urlParams.r);
     if (urlParams.v) setVersion(urlParams.v);
     if (urlParams.d) setDeveloperAddress(urlParams.d);
     if (urlParams.h) setReleaseHash(urlParams.h);
+
+    // Check if any URL parameter exists, then set the stepper
+    if (urlParams.r || urlParams.v || urlParams.d || urlParams.h) {
+      setStepper(1);
+    }
   }, []);
 
-  //Sets the address when connecting to metamask and publishing
   useEffect(() => {
-    async function setAccount() {
-      if (provider) {
-        const accounts = await provider.listAccounts();
-        setMetamaskAddress(accounts[0].address);
-      }
-    }
-    setAccount();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [providerReq, publishReqStatus]);
-
-  useEffect(() => {
-    // Necessary code to refresh the userAddress
-    // when user interacts with the metamask extension
-    // @ts-ignore
-    const ethereum = window.ethereum;
-    if (ethereum)
-      ethereum.on("accountsChanged", (accounts: string[]) => {
-        console.log("new user account", accounts[0]);
-        setMetamaskAddress(accounts[0]);
+    //Check if wallet already connected
+    const getWallet = async () => {
+      const addresses: string[] = await window.ethereum.request({
+        method: "eth_accounts",
       });
-  }, []);
-
-  // Check manifest for manifestHash
-
-  const onNewManifestHash = useMemo(
-    () =>
-      debounce(async (hash: string) => {
-        try {
-          const manifest = await fetchManifestMem(hash, IPFS_GATEWAY);
-          setManifest({ ...manifest, hash });
-        } catch (error) {
-          console.error(`Error fetching manifest ${hash}`, error);
-        }
-
-        try {
-          await fetchReleaseSignature(hash, IPFS_GATEWAY);
-          setIsSigned(true);
-        } catch (e) {
-          console.error(`Error fetching release ${hash}`, e);
-          setIsSigned(false);
-        }
-      }, 500),
-    []
-  );
-  const onNewDnpName = useMemo(
-    () =>
-      debounce((dnpName: string, provider: ethers.Provider) => {
-        console.log("ON NEW DNP", dnpName);
-        resolveDnpNameMem(dnpName, provider)
-          .then(setRepoAddresses)
-          .catch((e) => console.error(`Error resolving dnpName ${dnpName}`, e));
-        getLatestVersionMem(dnpName, provider)
-          .then(setLatestVersion)
-          .catch((e) => console.error(`Error get latest ver ${dnpName}`, e));
-      }, 500),
-    []
-  );
-
-  useEffect(() => {
-    if (signedReleaseHash) onNewManifestHash(signedReleaseHash);
-  }, [signedReleaseHash, onNewManifestHash]);
-
-  useEffect(() => {
-    if (dnpName && isValidEns(dnpName) && provider)
-      onNewDnpName(dnpName, provider);
-  }, [dnpName, provider, onNewDnpName]);
-
-  useEffect(() => {
-    if (dnpName && metamaskAddress && provider) {
-      (async () => {
-        if (!provider) throw Error(`Must connect to Metamask first`);
-
-        if (metamaskAddress) {
-          const { repoAddress } = await resolveDnpNameMem(dnpName, provider);
-          if (repoAddress) {
-            setIsAllowedAddress(
-              await apmRepoIsAllowed(repoAddress, metamaskAddress, provider)
-            );
-          }
-        }
-      })();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [metamaskAddress]);
-
-  async function connectToMetamask() {
-    try {
-      setProviderReq({ loading: true });
-      // Modern dapp browsers...
-      if (window.ethereum) {
-        // Request account access if needed
-        await window.ethereum.enable();
-        // Acccounts now exposed
+      console.log(`addresses is ${addresses}`);
+      if (addresses.length > 0) {
+        setProviderReq({ loading: true });
+        setIsConnected(true);
         setProviderReq({
           result: new ethers.BrowserProvider(window.ethereum),
+          loading: false,
         });
-      }
-      // Legacy dapp browsers...
-      else if (window.web3) {
-        setProviderReq({
-          result: new ethers.BrowserProvider(window.web3.currentProvider),
-        });
-      }
-      // Non-dapp browsers...
-      else {
-        throw Error("Non-Ethereum browser detected. Please, install MetaMask");
-      }
-    } catch (e) {
-      console.error(e);
-      setProviderReq({ error: e as Error });
-    }
-  }
+        try {
+          const chainId = await window.ethereum.request({
+            method: "eth_chainId",
+          });
 
-  async function doSignRelease() {
-    try {
-      setSignReq({ loading: true });
-      // newReleaseHash is not prefixed by '/ipfs/'
-      const newReleaseHash = await signRelease(
-        releaseHash,
-        parseIpfsApiUrls(ipfsApiUrls)
-      );
-      setSignReq({ result: newReleaseHash });
-      setSignedReleaseHash(`/ipfs/${newReleaseHash}`);
-    } catch (e) {
-      console.error(e);
-      setSignReq({ error: e as Error });
-    }
-  }
-
-  async function publish() {
-    try {
-      if (!dnpName) throw Error("Must provide a dnpName");
-      if (!version) throw Error("Must provide a version");
-      if (!signedReleaseHash) throw Error("Must provide a manifestHash");
-
-      setPublishReqStatus({ loading: true });
-
-      if (!provider) throw Error(`Must connect to Metamask first`);
-      const network = await provider.getNetwork();
-
-      if (network && String(network.chainId) !== "1")
-        throw Error("Transactions must be published on Ethereum Mainnet");
-
-      if (metamaskAddress) {
-        const { repoAddress } = await resolveDnpNameMem(dnpName, provider);
-        if (repoAddress) {
-          setIsAllowedAddress(
-            await apmRepoIsAllowed(repoAddress, metamaskAddress, provider)
-          );
-          if (!isAllowedAddress)
-            throw Error(
-              `Selected address ${metamaskAddress} is not allowed to publish`
-            );
+          setAccount(addresses[0]);
+          if (chainId === "0x1") {
+            setIsMainnet(true);
+            setStepper(2);
+          }
+        } catch (e) {
+          setProviderReq({ error: e as Error, loading: false });
+          console.error("Error fetching chainId:", e);
         }
       }
+    };
 
-      const txHash = await executePublishTx(
-        { dnpName, version, manifestHash: signedReleaseHash, developerAddress },
-        provider
+    if (window.ethereum) {
+      getWallet();
+      //window ethereum EIP: https://eips.ethereum.org/EIPS/eip-1193
+      window.ethereum.on("chainChanged", (chainId: string) => {
+        console.log("event chainChanged: ", chainId);
+        window.location.reload();
+      });
+      window.ethereum.on("accountsChanged", (accounts: Array<string>) => {
+        console.log("event accountsChanged");
+        console.log("accounts", accounts);
+        setAccount(accounts[0]);
+      });
+
+      // connect, disconnect and message events are not tested due couldn't be triggered
+      window.ethereum.on(
+        "message",
+        (message: { type: string; data: unknown }) => {
+          console.log("event message", message);
+        },
       );
-      setPublishReqStatus({ result: txHash });
-    } catch (e) {
-      console.error(e);
-      setPublishReqStatus({ error: e as Error });
+      window.ethereum.on(
+        "disconnect",
+        (error: { message: string; code: number; data?: unknown }) => {
+          console.log("disconnect", error);
+          setIsConnected(false);
+        },
+      );
+      window.ethereum.on("connect", (connectInfo: { chainId: string }) => {
+        console.log("event connect", connectInfo);
+        setIsConnected(true);
+        window.ethereum
+          .request({ method: "eth_requestAccounts" })
+          .then((accounts: string[]) => {
+            console.log("accounts", accounts);
+            // store it in state
+            console.log(`1`);
+            setAccount(accounts[0]);
+          })
+          .catch((error: { message: string; code: number; data?: unknown }) =>
+            console.log("error", error),
+          );
+        // 0x1 is mainnet's chainId in hex
+        console.log(`connectInfo.chainId:`);
+        console.log(connectInfo.chainId);
+        if (connectInfo.chainId === "0x1") setIsMainnet(true);
+      });
+    }
+  }, []);
+
+  function Steps() {
+    switch (stepper) {
+      // STEPS:
+      // 0. Introduction
+      // 1. Connect wallet
+      // 2. Edit IPFS settings
+      // 3. ReleaseDetails check
+      // 4. sign and publish
+      // 5. release published
+      case 0:
+        return <IntroductionStep setStepper={setStepper} />;
+      case 1:
+        return (
+          <ConnectWalletStep
+            setStepper={setStepper}
+            account={account}
+            setAccount={setAccount}
+            isMainnet={isMainnet}
+            setIsMainnet={setIsMainnet}
+            isConnected={isConnected}
+            setIsConnected={setIsConnected}
+            provider={window.ethereum}
+            providerReq={providerReq}
+            setProviderReq={setProviderReq}
+          />
+        );
+      case 2:
+        return (
+          <IpfsSettingsStep
+            setStepper={setStepper}
+            ipfsApiUrls={ipfsApiUrls}
+            setIpfsApiUrls={setIpfsApiUrls}
+            ipfsGatewayUrl={ipfsGatewayUrl}
+            setIpfsGatewayUrl={setIpfsGatewayUrl}
+          />
+        );
+      case 3:
+        return (
+          <ReleaseFormStep
+            setStepper={setStepper}
+            dnpName={dnpName}
+            setDnpName={setDnpName}
+            developerAddress={developerAddress}
+            setDeveloperAddress={setDeveloperAddress}
+            version={version}
+            setVersion={setVersion}
+            releaseHash={releaseHash}
+            setReleaseHash={setReleaseHash}
+            provider={provider}
+            ipfsGatewayUrl={ipfsGatewayUrl}
+            repoAddresses={repoAddresses}
+            setRepoAddresses={setRepoAddresses}
+          />
+        );
+      case 4:
+        return (
+          <SignAndPublish
+            setStepper={setStepper}
+            dnpName={dnpName}
+            devAddress={developerAddress}
+            version={version}
+            releaseHash={releaseHash}
+            provider={provider}
+            account={account}
+            developerAddress={developerAddress}
+            publishReqStatus={publishReqStatus}
+            setPublishReqStatus={setPublishReqStatus}
+            ipfsApiUrls={ipfsApiUrls}
+            ipfsGatewayUrl={ipfsGatewayUrl}
+          />
+        );
+      case 5:
+        return (
+          <ReleasePublished
+            setStepper={setStepper}
+            publishReqStatus={publishReqStatus}
+            repoAddresses={repoAddresses}
+          />
+        );
     }
   }
 
-  /**
-   * Description of the input fields
-   */
-  const fields: FormField[] = [
-    {
-      id: "dnpName",
-      name: "DAppNode Package name",
-      placeholder: "full ENS name",
-      help: "ENS name of the DAppNode Package to update, i.e. timeapp.public.dappnode.eth",
-      value: dnpName,
-      onValueChange: setDnpName,
-      validations: [
-        dnpName
-          ? isValidEns(dnpName)
-            ? { isValid: true, message: "Valid ENS domain" }
-            : { isValid: false, message: "Invalid ENS domain" }
-          : null,
-        dnpName && repoAddresses
-          ? repoAddresses.registryAddress
-            ? repoAddresses.repoAddress
-              ? {
-                  isValid: true,
-                  message: `Repo already deployed at: ${repoAddresses.repoAddress}`,
-                }
-              : {
-                  isValid: true,
-                  message: `New repo to be deployed for ${dnpName}`,
-                }
-            : {
-                isValid: false,
-                message: `No valid registry found for ${dnpName}`,
-              }
-          : null,
-      ],
-    },
-    {
-      id: "developerAddress",
-      name: "Developer address",
-      placeholder: "Ethereum address",
-      help: "Developer's Ethereum address that will control this repo",
-      value: developerAddress,
-      onValueChange: setDeveloperAddress,
-      validations: [
-        developerAddress
-          ? ethers.isAddress(developerAddress)
-            ? { isValid: true, message: "Valid address" }
-            : { isValid: false, message: "Must be a valid ethereum address" }
-          : null,
-      ],
-    },
-    {
-      id: "version",
-      name: "Next version",
-      placeholder: "Semantic version",
-      help: "Semantic version about to be published, i.e. 0.1.7",
-      value: version,
-      onValueChange: setVersion,
-      validations: [
-        version
-          ? semver.valid(version)
-            ? { isValid: true, message: "Valid semver" }
-            : { isValid: false, message: "Invalid semver" }
-          : null,
-        version && latestVersion
-          ? isValidBump(latestVersion, version)
-            ? { isValid: true, message: `Valid bump from ${latestVersion}` }
-            : { isValid: false, message: "Next version is not a valid bump" }
-          : null,
-      ],
-    },
-    {
-      id: "releaseIpfsHash",
-      name: "Release hash",
-      placeholder: "IPFS multihash",
-      help: "IPFS hash of the release. Must be in the format /ipfs/[multihash], i.e. /ipfs/QmVeaz5kR55nAiGjYpXpUAJpWvf6net4MbGFNjBfMTS8xS",
-      value: releaseHash,
-      onValueChange: setReleaseHash,
-      validations: [
-        releaseHash
-          ? isIpfsHash(releaseHash)
-            ? { isValid: true, message: "Valid ipfs hash" }
-            : { isValid: false, message: "Invalid ipfs hash" }
-          : null,
-        // checking first that the release has been already signed to continue with the others checks
-        signedReleaseHash
-          ? manifest
-            ? manifest.name && manifest.version
-              ? manifest.name === dnpName && manifest.version === version
-                ? { isValid: true, message: "Manifest successfully verified" }
-                : {
-                    isValid: false,
-                    message: `Manifest verification failed. This manifest is for ${manifest.name} @ ${manifest.version}`,
-                  }
-              : {
-                  isValid: false,
-                  message: `Manifest's name or version not found in this hash`,
-                }
-            : {
-                isValid: false,
-                message: `Hash or manifest not found`,
-              }
-          : null,
-      ],
-    },
-    {
-      id: "signedReleaseIpfsHash",
-      name: "Signed Release hash",
-      placeholder: "Signed IPFS multihash",
-      help: "IPFS hash of the signed release. In format /ipfs/[multihash], i.e. /ipfs/QmVeaz5kR55nAiGjYpXpUAJpWvf6net4MbGFNjBfMTS8xS",
-      value: signedReleaseHash,
-      onValueChange: setSignedReleaseHash,
-      validations: [
-        isSigned
-          ? { isValid: true, message: "Release is signed" }
-          : isSigned === false
-            ? { isValid: false, message: "Release not signed" }
-            : null,
-        manifest
-          ? signedReleaseHash && signedReleaseHash === manifest.hash
-            ? {
-                isValid: true,
-                message: "Signed release hash successfully verified",
-              }
-            : {
-                isValid: false,
-                message: `Signed release hash verification failed. Its manifest hash is ${manifest.hash}`,
-              }
-          : null,
-      ],
-    },
-  ];
-
   return (
-    <div className="app">
-      <Title title="SDK" subtitle="Publish" />
-      <div className="mt-3 text-muted">
-        <p>
-          This tool is part of the DAppNode Software Development Kit
-          (dappnodesdk) and allows to sign DAppNode package release transactions
-          with Metamask.
-        </p>
-        {!window.location.search && (
-          <div
-            className="alert alert-secondary"
-            role="alert"
-            style={{ backgroundColor: "#f1f1f3" }}
-          >
-            To generate a pre-filled URL with the parameters to publish a
-            release transaction install{" "}
-            <a href={SDK_INSTALL_URL} {...newTabProps}>
-              <code>@dappnode/dappnodesdk</code>
-            </a>
-          </div>
-        )}
+    <div className="flex h-screen w-screen flex-col overflow-y-clip">
+      <Header account={account} />
+      <div className=" flex h-full flex-col items-center bg-background-color">
+        {Steps()}
       </div>
 
-      <SubTitle>Transaction details</SubTitle>
-      <Card>
-        <div className="publish-grid">
-          {fields.map((field) => {
-            const validations = (field.validations || []).filter(notNullish);
-            const success = validations.filter((v) => v && v.isValid);
-            const errors = validations.filter((v) => v && !v.isValid);
-            return (
-              <React.Fragment key={field.name}>
-                <div className="field-name">{field.name}</div>
-                <div>
-                  <input
-                    className={`form-control ${getInputClass({
-                      error: errors.length > 0,
-                      success: success.length > 0,
-                    })}`}
-                    placeholder={field.placeholder}
-                    value={field.value}
-                    onChange={(e) => field.onValueChange(e.target.value)}
-                    disabled={field.id === `signedReleaseIpfsHash`}
-                  />
-                  {success.map((item, i) => (
-                    <div key={i} className="valid-feedback">
-                      <div>{item.message}</div>
-                    </div>
-                  ))}
-                  {errors.map((item, i) => (
-                    <div key={i} className="invalid-feedback">
-                      <div>{item.message}</div>
-                    </div>
-                  ))}
-                  <small className="form-text text-muted help">
-                    {field.help}
-                  </small>
-                </div>
-              </React.Fragment>
-            );
-          })}
-
-          {/* Empty left cell */}
-          <div />
-          <div className="bottom-section">
-            {/* Publish button */}
-            {isSigned &&
-              !isAllowedAddress &&
-              repoAddresses?.repoAddress !== null && (
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <p>
-                    To publish the package you need an allowed Address! <br />
-                    Your current metamask addres is: {metamaskAddress}
-                  </p>
-                </div>
-              )}
-
-            <div className="bottom-buttons">
-              {provider ? (
-                <button
-                  className="btn btn-dappnode"
-                  disabled={
-                    publishReqStatus.loading ||
-                    !isSigned ||
-                    (!isAllowedAddress &&
-                      repoAddresses?.repoAddress !== null) ||
-                    !manifest ||
-                    manifest.name !== dnpName ||
-                    manifest.version !== version ||
-                    manifest.hash !== signedReleaseHash
-                  }
-                  onClick={publish}
-                >
-                  Publish
-                </button>
-              ) : (
-                <button
-                  className="btn btn-dappnode"
-                  disabled={providerReq.loading}
-                  onClick={connectToMetamask}
-                >
-                  <img src={metamaskIcon} alt="" className="metamaskIcon" />{" "}
-                  Connect to Metamask
-                </button>
-              )}
-              {providerReq.result && (
-                <button
-                  className="btn btn-dappnode"
-                  disabled={signReq.loading || isSigned === true}
-                  onClick={doSignRelease}
-                >
-                  Sign release
-                </button>
-              )}
-            </div>
-
-            {providerReq.error && <ErrorView error={providerReq.error} />}
-            {providerReq.loading && (
-              <LoadingView steps={["Connecting to Metamask"]} />
-            )}
-            {signReq.error && <ErrorView error={signReq.error} />}
-            {signReq.loading && <LoadingView steps={["Signing release"]} />}
-            {publishReqStatus.error && (
-              <ErrorView error={publishReqStatus.error} />
-            )}
-            {publishReqStatus.loading && (
-              <LoadingView steps={["Publishing release transaction"]} />
-            )}
-            {publishReqStatus.result && (
-              <div className="feedback-success">
-                Published transaction! Tx hash: {publishReqStatus.result}
-              </div>
-            )}
-          </div>
-        </div>
-      </Card>
-
-      {showSettings ? (
-        <>
-          <SubTitle>Settings</SubTitle>
-          <Card>
-            <div className="field-name">IPFS API URLs</div>
-            <p className="text-muted">
-              You can specify multiple URLs, to facilitate propagation of the
-              signed release
-            </p>
-            <textarea
-              className={"form-control"}
-              placeholder="https://infura-ipfs.io:5001 &#13;&#10;http://your-own-ipfs-node:5001"
-              value={ipfsApiUrls}
-              onChange={(e) => setIpfsApiUrls(e.target.value)}
-            />
-          </Card>
-        </>
-      ) : (
-        <div className="settings-container">
-          <span
-            className="show-settings text-muted"
-            onClick={() => setShowSettings(true)}
-          >
-            Edit settings
-          </span>
-        </div>
-      )}
     </div>
   );
 }
