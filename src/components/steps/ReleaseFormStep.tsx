@@ -80,6 +80,7 @@ export default function ReleaseForm({
     }
 
     if (isValidEns(dnpName)) checkDnpName(dnpName, provider);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dnpName, provider]);
 
   useEffect(() => {

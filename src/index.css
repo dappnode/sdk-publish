@@ -29,3 +29,14 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+/* react-bootstrap's ProgressBar */
+.progress-bar {
+  background-color: #c98dff;
+  /* When the bar goes from full "starting" to downloading,
+     it moves too slow an looks wierd */
+  transition: none !important;
+}
+.progress {
+  height: 1.1rem;
+}
