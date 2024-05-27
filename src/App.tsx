@@ -120,25 +120,6 @@ export function App() {
           setIsConnected(false);
         },
       );
-      window.ethereum.on("connect", (connectInfo: { chainId: string }) => {
-        console.log("event connect", connectInfo);
-        setIsConnected(true);
-        window.ethereum
-          .request({ method: "eth_requestAccounts" })
-          .then((accounts: string[]) => {
-            console.log("accounts", accounts);
-            // store it in state
-            console.log(`1`);
-            setAccount(accounts[0]);
-          })
-          .catch((error: { message: string; code: number; data?: unknown }) =>
-            console.log("error", error),
-          );
-        // 0x1 is mainnet's chainId in hex
-        console.log(`connectInfo.chainId:`);
-        console.log(connectInfo.chainId);
-        if (connectInfo.chainId === "0x1") setIsMainnet(true);
-      });
     }
   }, []);
 
@@ -230,7 +211,6 @@ export function App() {
       <div className=" flex h-full flex-col items-center bg-background-color">
         {Steps()}
       </div>
-
     </div>
   );
 }

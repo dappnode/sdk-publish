@@ -17,7 +17,8 @@ export default function IntroductionStep({
       <Title title={"Publish your package"} />
       <p>
         This tool is part of the Dappnode Software Development Kit (dappnodesdk)
-        and allows to sign Dappnode package release transactions with Metamask.
+        and allows to sign Dappnode package release transactions with a wallet
+        provider.
       </p>
       <p>
         To generate a pre-filled URL with the parameters to publish a release

@@ -116,7 +116,7 @@ export default function ConnectWalletStep({
         ) : (
           <>
             <p>
-              Your current metamask addres is:{" "}
+              Your current ethereum address is:{" "}
               <span className="tracking-wider text-text-purple">{account}</span>
             </p>
             <Button onClick={() => setStepper((prevState) => prevState + 1)}>

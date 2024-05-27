@@ -100,7 +100,7 @@ export default function ReleaseForm({
   // Form input variables
   const fields: FormField[] = [
     {
-      name: "DAppNode Package name",
+      name: "Dappnode Package name",
       placeholder: "i.e. yourpackage.public.dappnode.eth",
       value: dnpName,
       onValueChange: setDnpName,

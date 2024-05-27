@@ -47,8 +47,8 @@ export default function IpfsSettingsStep({
       <div className="flex flex-col gap-1">
         <div className="text-text-purple">IPFS Gateway URL</div>
         <p className="text-sm">
-          Fulfill with a Gateway URLs to ensure that the IPFS hash has
-          propagated or not.
+          Fulfill with a Gateway URL to ensure that the IPFS hash has propagated
+          or not.
         </p>
         <p></p>
         <input
