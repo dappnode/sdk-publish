@@ -206,9 +206,9 @@ export function App() {
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-y-clip">
+    <div className="flex h-screen w-screen flex-col overflow-y-scroll">
       <Header account={account} />
-      <div className=" flex h-full flex-col items-center bg-background-color">
+      <div className=" flex h-full flex-col items-center bg-background-color pb-5">
         {Steps()}
       </div>
     </div>
