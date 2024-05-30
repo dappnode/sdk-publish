@@ -3,7 +3,7 @@ import dappnodeLogo from "img/dappnode-logo-only.png";
 
 export default function Header({ account }: { account: string | null }) {
   return (
-    <div className="flex h-[10%] w-full items-center justify-between px-10  ">
+    <div className="flex h-[10%] w-full items-center justify-between bg-white px-10">
       <div className="flex items-center  gap-2">
         <img src={dappnodeLogo} alt="dappnode_logo" className="w-14" />
         <div className="flex flex-col text-xl">
