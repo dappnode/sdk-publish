@@ -155,7 +155,10 @@ export default function ReleaseForm({
         version && latestVersion
           ? isValidBump(latestVersion, version)
             ? { isValid: true, message: `Valid bump from ${latestVersion}` }
-            : { isValid: false, message: "Next version is not a valid bump" }
+            : {
+                isValid: false,
+                message: `Next version is not a valid bump from ${latestVersion}`,
+              }
           : null,
       ],
     },
@@ -229,7 +232,7 @@ export default function ReleaseForm({
                 validation ? (
                   <div
                     key={i}
-                    className={`mt-2 text-xs ${
+                    className={`mt-2 font-poppins text-xs ${
                       validation.isValid
                         ? "text-success-green"
                         : "text-error-red"
