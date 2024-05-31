@@ -30,6 +30,7 @@ interface ReleaseFormProps {
   setRepoAddresses: React.Dispatch<
     React.SetStateAction<RepoAddresses | undefined>
   >;
+  account: string | null;
 }
 
 export default function ReleaseForm({
@@ -46,12 +47,15 @@ export default function ReleaseForm({
   ipfsGatewayUrl,
   repoAddresses,
   setRepoAddresses,
+  account,
 }: ReleaseFormProps) {
   const [latestVersion, setLatestVersion] = useState<string>();
   const [manifest, setManifest] = useState<
     (Manifest & { hash: string }) | null
   >();
-  console.log(dnpName);
+
+  const [showDevAddressModal, setShowDevAddressModal] = useState(false);
+  const [devAddressCheck, setDevAddressCheck] = useState(false);
 
   useEffect(() => {
     async function checkManifest(hash: string) {
@@ -200,63 +204,125 @@ export default function ReleaseForm({
     .filter((validation) => validation !== null && !validation?.isValid)
     .map((validation) => validation?.message ?? "");
 
-  return (
-    <BaseCard
-      hasBack={() => {
-        setStepper((prevState) => prevState - 1);
-      }}
-    >
-      <Title title={"3. Release Details"} />
-      <p>
-        Fulfill the following form with the information of your package release.
-      </p>
-      {fields.map((field, i) => {
-        const validations = (field.validations || []).filter(notNullish);
-        const success = validations.filter((v) => v && v.isValid);
-        const errors = validations.filter((v) => v && !v.isValid);
-        return (
-          <div key={i}>
-            <Input
-              key={field.name}
-              name={field.name}
-              placeholder={field.placeholder}
-              value={field.value}
-              error={errors.length > 0}
-              success={success.length > 0}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                field.onValueChange(e.target.value)
-              }
-            ></Input>
-            {field.validations &&
-              field.validations.map((validation, i) =>
-                validation ? (
-                  <div
-                    key={i}
-                    className={`mt-2 font-poppins text-xs ${
-                      validation.isValid
-                        ? "text-success-green"
-                        : "text-error-red"
-                    }`}
-                  >
-                    {validation.message}
-                  </div>
-                ) : null,
-              )}
+  const handleNext = () => {
+    if (!developerAddress || developerAddress === account) {
+      setStepper((prevState) => prevState + 1);
+    } else {
+      setShowDevAddressModal(true);
+    }
+  };
+
+  function DevAddressWarningModal() {
+    return (
+      <div className="absolute left-0 top-0 z-10 flex h-screen w-screen items-center justify-center bg-black/80">
+        <BaseCard className="m-0">
+          <Title title={"Developer Address Warning"} />
+          <b className="font-poppins"> Read this before going forward: </b>
+          <ul className="flex list-disc flex-col gap-5 pl-5 font-poppins marker:text-text-purple">
+            <li>
+              Setting a developer address will restrict future releases of this
+              package to the developer address you set, preventing the use of
+              your current Ethereum address for publishing.
+            </li>
+            <li>
+              Only the specified developer address will be able to publish new
+              versions of this package.
+            </li>
+            <li>
+              If you lose access to the developer address, the package could
+              become "orphaned," making it impossible to publish new versions.
+            </li>
+          </ul>
+          <div className="flex flex-row gap-3">
+            <input
+              type="checkbox"
+              className="h-5 w-5 accent-text-purple"
+              onChange={() => setDevAddressCheck(!devAddressCheck)}
+              checked={devAddressCheck}
+            />{" "}
+            <p>I undestrand the risks of setting a developer address</p>
           </div>
-        );
-      })}
-      <Button
-        onClick={() => setStepper((prevState) => prevState + 1)}
-        disabled={
-          errors.length > 0 ||
-          !dnpName ||
-          !version ||
-          !releaseHash ||
-          !repoAddresses
-        }
+
+          <div className="flex flex-row gap-10">
+            <div className="w-1/2">
+              <Button onClick={() => setShowDevAddressModal(false)}>
+                Go back
+              </Button>
+            </div>
+            <div className="w-1/2 ">
+              <Button
+                disabled={!devAddressCheck}
+                onClick={() => setStepper((prevState) => prevState + 1)}
+              >
+                Continue anyway
+              </Button>
+            </div>
+          </div>
+        </BaseCard>
+      </div>
+    );
+  }
+  return (
+    <>
+      {showDevAddressModal && DevAddressWarningModal()}
+      <BaseCard
+        hasBack={() => {
+          setStepper((prevState) => prevState - 1);
+        }}
       >
-        Next
-      </Button>
-    </BaseCard>
+        <Title title={"3. Release Details"} />
+        <p>
+          Fulfill the following form with the information of your package
+          release.
+        </p>
+        {fields.map((field, i) => {
+          const validations = (field.validations || []).filter(notNullish);
+          const success = validations.filter((v) => v && v.isValid);
+          const errors = validations.filter((v) => v && !v.isValid);
+          return (
+            <div key={i}>
+              <Input
+                key={field.name}
+                name={field.name}
+                placeholder={field.placeholder}
+                value={field.value}
+                error={errors.length > 0}
+                success={success.length > 0}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  field.onValueChange(e.target.value)
+                }
+              ></Input>
+              {field.validations &&
+                field.validations.map((validation, i) =>
+                  validation ? (
+                    <div
+                      key={i}
+                      className={`mt-2 font-poppins text-xs ${
+                        validation.isValid
+                          ? "text-success-green"
+                          : "text-error-red"
+                      }`}
+                    >
+                      {validation.message}
+                    </div>
+                  ) : null,
+                )}
+            </div>
+          );
+        })}
+        <Button
+          onClick={handleNext}
+          disabled={
+            errors.length > 0 ||
+            !dnpName ||
+            !version ||
+            !releaseHash ||
+            !repoAddresses
+          }
+        >
+          Next
+        </Button>
+      </BaseCard>
+    </>
   );
 }
