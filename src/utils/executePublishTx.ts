@@ -65,6 +65,11 @@ export async function executePublishTx(
     if (!developerAddress)
       throw Error("developerAddress must be defined for new repos");
 
+    if (version !== "0.0.1" && version !== "0.1.0" && version !== "1.0.0")
+      throw Error(
+        "version must be 0.0.1, 0.1.0 or 1.0.0 when a package is published by the first time"
+      );
+
     if (!registryAddress) throw Error(`No registry found for ${dnpName}`);
 
     // newRepoWithVersion(
