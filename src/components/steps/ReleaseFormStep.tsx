@@ -144,6 +144,19 @@ export default function ReleaseForm({
             : { isValid: false, message: "Must be a valid ethereum address" }
           : null,
       ],
+      warnings: [
+        developerAddress
+          ? developerAddress.toLowerCase() === account?.toLowerCase()
+            ? {
+                isValid: true,
+                message: "Developer address is the same the one publishing",
+              }
+            : {
+                isValid: false,
+                message: "Developer address diferent from the one publishing",
+              }
+          : null,
+      ],
     },
     {
       name: "Next version",
@@ -205,7 +218,10 @@ export default function ReleaseForm({
     .map((validation) => validation?.message ?? "");
 
   const handleNext = () => {
-    if (!developerAddress || developerAddress === account) {
+    if (
+      !developerAddress ||
+      developerAddress.toLowerCase() === account?.toLowerCase()
+    ) {
       setStepper((prevState) => prevState + 1);
     } else {
       setShowDevAddressModal(true);
@@ -217,20 +233,19 @@ export default function ReleaseForm({
       <div className="absolute left-0 top-0 z-10 flex h-screen w-screen items-center justify-center bg-black/80">
         <BaseCard className="m-0">
           <Title title={"Developer Address Warning"} />
-          <b className="font-poppins"> Read this before going forward: </b>
+          <p className="font-poppins">
+            Setting a developer address will restrict future releases when
+            publishing. Read this before going forward:
+          </p>
           <ul className="flex list-disc flex-col gap-5 pl-5 font-poppins marker:text-text-purple">
-            <li>
-              Setting a developer address will restrict future releases of this
-              package to the developer address you set, preventing the use of
-              your current Ethereum address for publishing.
-            </li>
             <li>
               Only the specified developer address will be able to publish new
               versions of this package.
             </li>
             <li>
-              If you lose access to the developer address, the package could
-              become "orphaned," making it impossible to publish new versions.
+              If you lose access to the developer address,{" "}
+              <b>the package could become "orphaned" </b> , making it impossible
+              to publish new versions.
             </li>
           </ul>
           <div className="flex flex-row gap-3">
@@ -277,6 +292,7 @@ export default function ReleaseForm({
         </p>
         {fields.map((field, i) => {
           const validations = (field.validations || []).filter(notNullish);
+          const warnings = (field.warnings || []).filter(notNullish);
           const success = validations.filter((v) => v && v.isValid);
           const errors = validations.filter((v) => v && !v.isValid);
           return (
@@ -288,24 +304,40 @@ export default function ReleaseForm({
                 value={field.value}
                 error={errors.length > 0}
                 success={success.length > 0}
+                warning={warnings.length > 0}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   field.onValueChange(e.target.value)
                 }
               ></Input>
               {field.validations &&
-                field.validations.map((validation, i) =>
-                  validation ? (
-                    <div
-                      key={i}
-                      className={`mt-2 font-poppins text-xs ${
-                        validation.isValid
-                          ? "text-success-green"
-                          : "text-error-red"
-                      }`}
-                    >
-                      {validation.message}
-                    </div>
-                  ) : null,
+                field.validations.map(
+                  (validation, i) =>
+                    validation && (
+                      <div
+                        key={i}
+                        className={`mt-2 font-poppins text-xs ${
+                          validation.isValid
+                            ? "text-success-green"
+                            : "text-error-red"
+                        }`}
+                      >
+                        {validation.message}
+                      </div>
+                    ),
+                )}
+              {field.warnings &&
+                field.warnings.map(
+                  (warning, i) =>
+                    warning && (
+                      <div
+                        key={i}
+                        className={`mt-2 text-xs ${
+                          warning.isValid ? "text-error-red" : "text-yellow-600"
+                        }`}
+                      >
+                        {warning.message}
+                      </div>
+                    ),
                 )}
             </div>
           );

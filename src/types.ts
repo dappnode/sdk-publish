@@ -34,6 +34,7 @@ export interface FormField {
   value: any;
   onValueChange: (newValue: any) => void;
   validations?: FormFieldValidation[];
+  warnings?: FormFieldValidation[];
 }
 export interface ReleaseDetails {
   name: string;
