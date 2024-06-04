@@ -23,7 +23,9 @@ export default function IntroductionStep({
       {publishReqStatus.result && (
         <div>
           <span className="text-text-purple">Transaction hash: </span>
-          {publishReqStatus.result}
+          <span className="font-poppins font-medium">
+            {publishReqStatus.result}
+          </span>
         </div>
       )}
       <p>
