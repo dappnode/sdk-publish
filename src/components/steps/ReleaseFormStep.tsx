@@ -295,6 +295,7 @@ export default function ReleaseForm({
           const warnings = (field.warnings || []).filter(notNullish);
           const success = validations.filter((v) => v && v.isValid);
           const errors = validations.filter((v) => v && !v.isValid);
+          const filteredWarnings = warnings.filter((w) => w && !w.isValid);
           return (
             <div key={i}>
               <Input
@@ -304,7 +305,7 @@ export default function ReleaseForm({
                 value={field.value}
                 error={errors.length > 0}
                 success={success.length > 0}
-                warning={warnings.length > 0}
+                warning={filteredWarnings.length > 0}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   field.onValueChange(e.target.value)
                 }
@@ -332,7 +333,9 @@ export default function ReleaseForm({
                       <div
                         key={i}
                         className={`mt-2 text-xs ${
-                          warning.isValid ? "text-error-red" : "text-yellow-600"
+                          warning.isValid
+                            ? "text-success-green"
+                            : "text-yellow-600"
                         }`}
                       >
                         {warning.message}
