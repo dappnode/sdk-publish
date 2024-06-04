@@ -153,7 +153,7 @@ export default function ReleaseForm({
               }
             : {
                 isValid: false,
-                message: "Developer address diferent from the one publishing",
+                message: "Developer address different from the one publishing",
               }
           : null,
       ],
@@ -232,7 +232,7 @@ export default function ReleaseForm({
     return (
       <div className="absolute left-0 top-0 z-10 flex h-screen w-screen items-center justify-center bg-black/80">
         <BaseCard className="m-0">
-          <Title title={"Developer Address Warning"} />
+          <Title title={"⚠️ Developer Address Warning ⚠️"} />
           <p className="font-poppins">
             Setting a developer address will restrict future releases when
             publishing. Read this before going forward:
