@@ -149,11 +149,12 @@ export default function ReleaseForm({
           ? developerAddress.toLowerCase() === account?.toLowerCase()
             ? {
                 isValid: true,
-                message: "Developer address is the same the one publishing",
+                message: "Developer address is the same as the one publishing",
               }
             : {
                 isValid: false,
-                message: "Developer address different from the one publishing",
+                message:
+                  "Developer address is different from the one publishing",
               }
           : null,
       ],
