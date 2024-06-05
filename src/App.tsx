@@ -175,6 +175,7 @@ export function App() {
             ipfsGatewayUrl={ipfsGatewayUrl}
             repoAddresses={repoAddresses}
             setRepoAddresses={setRepoAddresses}
+            account={account}
           />
         );
       case 4:
