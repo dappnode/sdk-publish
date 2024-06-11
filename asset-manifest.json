@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "./static/css/main.b76c9d17.css",
-    "main.js": "./static/js/main.0b145e46.js",
+    "main.js": "./static/js/main.132204e7.js",
     "static/media/dappnode-logo-only.png": "./static/media/dappnode-logo-only.6cef24399a920a2a3efe.png",
     "static/media/modeg.ttf": "./static/media/modeg.cc3859dce8b3c701dc55.ttf",
     "index.html": "./index.html",
     "static/media/left-arrow.svg": "./static/media/left-arrow.5bd4c3d2a484e6a10c1d113f3f4e2fe0.svg",
     "main.b76c9d17.css.map": "./static/css/main.b76c9d17.css.map",
-    "main.0b145e46.js.map": "./static/js/main.0b145e46.js.map"
+    "main.132204e7.js.map": "./static/js/main.132204e7.js.map"
   },
   "entrypoints": [
     "static/css/main.b76c9d17.css",
-    "static/js/main.0b145e46.js"
+    "static/js/main.132204e7.js"
   ]
 }
