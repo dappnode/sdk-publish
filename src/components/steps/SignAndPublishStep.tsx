@@ -6,7 +6,6 @@ import Title from "../Title";
 
 import { ErrorView } from "components/ErrorView";
 import { LoadingView } from "components/LoadingView";
-import memoizee from "memoizee";
 import { parseIpfsUrls } from "settings";
 import { apmRepoIsAllowed } from "utils/apmRepoIsAllowed";
 import { executePublishTx } from "utils/executePublishTx";
@@ -55,8 +54,6 @@ export default function SignAndPublish({
     null,
   );
 
-  const resolveDnpNameMem = memoizee(resolveDnpName, { promise: true });
-
   //Checks if the wallet address is whitelisted to publish
   useEffect(() => {
     if (dnpName && account && provider) {
@@ -64,16 +61,19 @@ export default function SignAndPublish({
         if (!provider) throw Error(`Must connect to Metamask first`);
 
         if (account) {
-          const { repoAddress } = await resolveDnpNameMem(dnpName, provider);
+          const { repoAddress } = await resolveDnpName(dnpName, provider);
           if (repoAddress) {
             setIsAllowedAddress(
               await apmRepoIsAllowed(repoAddress, account, provider),
             );
+          } else {
+            // Set it to true for new repos
+            setIsAllowedAddress(true);
           }
         }
       })();
     }
-  }, [account, dnpName, provider, resolveDnpNameMem]);
+  }, [account, dnpName, provider]);
 
   const details: ReleaseDetails[] = [
     {
@@ -123,23 +123,6 @@ export default function SignAndPublish({
       setPublishReqStatus({ loading: true });
 
       if (!provider) throw Error(`Must connect to Metamask first`);
-      const network = await provider.getNetwork();
-
-      if (network && String(network.chainId) !== "1")
-        throw Error("Transactions must be published on Ethereum Mainnet");
-
-      if (account) {
-        const { repoAddress } = await resolveDnpNameMem(dnpName, provider);
-        if (repoAddress) {
-          setIsAllowedAddress(
-            await apmRepoIsAllowed(repoAddress, account, provider),
-          );
-          if (!isAllowedAddress)
-            throw Error(
-              `Selected address ${account} is not allowed to publish`,
-            );
-        }
-      }
 
       const txHash = await executePublishTx(
         { dnpName, version, manifestHash: signedReleaseHash, developerAddress },
