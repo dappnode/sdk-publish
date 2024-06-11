@@ -18,8 +18,11 @@ export default function IntroductionStep({
 }: IntroductionStepProps) {
   return (
     <BaseCard>
-      <Title title={"Release published"} />
-      <p>Congratulations, your release has been successfully published!</p>
+      <Title title={"Release queued"} />
+      <p>
+        Your transaction has been successfully queued! It will be processed
+        sooner or later based on the gas fee you provided.
+      </p>
       {publishReqStatus.result && (
         <div>
           <span className="text-text-purple">Transaction hash: </span>
@@ -29,7 +32,7 @@ export default function IntroductionStep({
         </div>
       )}
       <p>
-        To check the transaction details navigate{" "}
+        To check the transaction status and details navigate{" "}
         <Link href={`https://etherscan.io/tx/${publishReqStatus.result}`}>
           here.
         </Link>
