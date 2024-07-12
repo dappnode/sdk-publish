@@ -126,7 +126,8 @@ export default function ConnectWalletStep({
         )
       ) : (
         <p>
-          Non-Ethereum browser detected. Please, install MetaMask to continue
+          No Ethereum wallet extension detected on browser. Please, install
+          MetaMask to continue.
         </p>
       )}
     </BaseCard>
