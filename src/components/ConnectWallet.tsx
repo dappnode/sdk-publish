@@ -9,6 +9,8 @@ export default function ConnectWallet({
   setProviderReq,
   setIsMainnet,
   setAccount,
+  setAvailableWallets,
+  setShowWalletModal,
 }: {
   setIsConnected: React.Dispatch<React.SetStateAction<boolean>>;
   providerReq: RequestStatus<ethers.BrowserProvider>;
@@ -18,7 +20,19 @@ export default function ConnectWallet({
 
   setIsMainnet: React.Dispatch<React.SetStateAction<boolean>>;
   setAccount: React.Dispatch<React.SetStateAction<string | null>>;
+  setShowWalletModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setAvailableWallets: React.Dispatch<React.SetStateAction<string[]>>;
 }) {
+  const getProviderName = (provider: any): string => {
+    if (provider?.info?.name) {
+      return provider.info.name; // Other wallet
+    }
+    if (provider?.isMetaMask) {
+      return "MetaMask"; // Metamask
+    }
+    return "Unknown Provider";
+  };
+
   const connectWallet = async () => {
     try {
       if (window.ethereum) {
@@ -79,8 +93,17 @@ export default function ConnectWallet({
     }
   };
 
+  const handleConnectWallet = () => {
+    if (window.ethereum.providers.length > 0) {
+      setAvailableWallets(window.ethereum.providers.map(getProviderName));
+      setShowWalletModal(true);
+    } else {
+      connectWallet();
+    }
+  };
+
   return (
-    <Button onClick={connectWallet} disabled={providerReq.loading}>
+    <Button onClick={handleConnectWallet} disabled={providerReq.loading}>
       Connect Wallet
     </Button>
   );

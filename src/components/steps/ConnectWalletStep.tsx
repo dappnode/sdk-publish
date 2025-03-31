@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import BaseCard from "../BaseCard";
 import ConnectWallet from "../ConnectWallet";
 import { SwitchNetwork } from "../SwitchNetwork";
@@ -36,7 +36,32 @@ export default function ConnectWalletStep({
   providerReq,
   setProviderReq,
 }: ConnectWalletStepProps) {
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [availableWallets, setAvailableWallets] = useState<string[]>([]);
   const prevIsMainnet = useRef(isMainnet);
+
+  const connectToWallet = async (walletIndex: number) => {
+    const selectedProvider = window.ethereum.providers
+      ? window.ethereum.providers[walletIndex]
+      : window.ethereum;
+    setProviderReq({ loading: true });
+    try {
+      const addresses: string[] = await selectedProvider.request({
+        method: "eth_requestAccounts",
+      });
+      setAccount(addresses[0]);
+      setIsConnected(true);
+      setProviderReq({
+        result: new ethers.BrowserProvider(selectedProvider),
+        loading: false,
+      });
+    } catch (error) {
+      console.error("Error connecting to wallet:", error);
+      setProviderReq({ error: error as Error, loading: false });
+    }
+    setShowWalletModal(false);
+  };
+
   useEffect(() => {
     const fetchChain = async () => {
       try {
@@ -74,62 +99,89 @@ export default function ConnectWalletStep({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMainnet]);
 
-  return (
-    <BaseCard hasBack={() => setStepper((prevState) => prevState - 1)}>
-      <Title title={"1. Connect your wallet"} />
-
-      {provider ? (
-        !isConnected ? (
-          <>
-            <p>To continue it's mandatory to connect your wallet</p>
-            {providerReq.loading && (
-              <LoadingView steps={["Connecting wallet"]} />
-            )}
-            {providerReq.error && (
-              <div className="text-sm text-error-red">
-                Error while trying to connect wallet. For more information check
-                the console
-                {
-                  <div className="mt-3 overflow-scroll text-xs">
-                    <ErrorView error={providerReq.error} />
-                  </div>
-                }
-              </div>
-            )}
-            <ConnectWallet
-              setIsConnected={setIsConnected}
-              providerReq={providerReq}
-              setProviderReq={setProviderReq}
-              setAccount={setAccount}
-              setIsMainnet={setIsMainnet}
-            />
-          </>
-        ) : !isMainnet ? (
-          <>
-            <p>
-              To continue it's mandatory to choose Mainnet as wallet's network
-            </p>
-            <SwitchNetwork setIsMainnet={setIsMainnet} />
-          </>
-        ) : !account ? (
-          <p>Any accounts detected</p>
-        ) : (
-          <>
-            <p>
-              Your current ethereum address is:{" "}
-              <span className="tracking-wider text-text-purple">{account}</span>
-            </p>
-            <Button onClick={() => setStepper((prevState) => prevState + 1)}>
-              Next
-            </Button>
-          </>
-        )
-      ) : (
-        <p>
-          No Ethereum wallet extension detected on browser. Please, install
-          MetaMask to continue.
+  const walletModal = () => (
+    <div className="absolute left-0 top-0 z-10 flex h-screen w-screen items-center justify-center bg-black/80">
+      <BaseCard className="m-0">
+        <Title title={"Choose a wallet provider"} />
+        <p className="font-poppins">
+          More than one wallet provider was detected!
+          <br />
+          Please, choose one to continue:
         </p>
-      )}
-    </BaseCard>
+        <div className="flex flex-col items-center justify-center">
+          <div className="flex w-full flex-row justify-evenly gap-2">
+            {availableWallets.map((wallet, index) => (
+              <Button onClick={() => connectToWallet(index)}>{wallet}</Button>
+            ))}
+          </div>
+        </div>
+      </BaseCard>
+    </div>
+  );
+
+  return (
+    <>
+      {showWalletModal && walletModal()}
+      <BaseCard hasBack={() => setStepper((prevState) => prevState - 1)}>
+        <Title title={"1. Connect your wallet"} />
+
+        {provider ? (
+          !isConnected ? (
+            <>
+              <p>To continue it's mandatory to connect your wallet</p>
+              {providerReq.loading && (
+                <LoadingView steps={["Connecting wallet"]} />
+              )}
+              {providerReq.error && (
+                <div className="text-sm text-error-red">
+                  Error while trying to connect wallet. For more information
+                  check the console
+                  {
+                    <div className="mt-3 overflow-scroll text-xs">
+                      <ErrorView error={providerReq.error} />
+                    </div>
+                  }
+                </div>
+              )}
+              <ConnectWallet
+                setIsConnected={setIsConnected}
+                providerReq={providerReq}
+                setProviderReq={setProviderReq}
+                setAccount={setAccount}
+                setIsMainnet={setIsMainnet}
+                setAvailableWallets={setAvailableWallets}
+                setShowWalletModal={setShowWalletModal}
+              />
+            </>
+          ) : !isMainnet ? (
+            <>
+              <p>
+                To continue it's mandatory to choose Mainnet as wallet's network
+              </p>
+              <SwitchNetwork setIsMainnet={setIsMainnet} />
+            </>
+          ) : !account ? (
+            <p>Any accounts detected</p>
+          ) : (
+            <>
+              <p>
+                Your current ethereum address is:{" "}
+                <span className="tracking-wider text-text-purple">
+                  {account}
+                </span>
+              </p>
+              <Button onClick={() => setStepper((prevState) => prevState + 1)}>
+                Next
+              </Button>
+            </>
+          )
+        ) : (
+          <p>
+            No Ethereum wallet extension detected on browser. Please, install
+            MetaMask to continue.
+          </p>
+        )}
+      </BaseCard>
+    </>
   );
 }
