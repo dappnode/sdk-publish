@@ -1,66 +1,23 @@
 import Header from "components/Header";
-import ConnectWalletStep from "components/steps/ConnectWalletStep";
-import IntroductionStep from "components/steps/IntroductionStep";
-import IpfsSettingsStep from "components/steps/IpfsSettingsStep";
-import ReleaseFormStep from "components/steps/ReleaseFormStep";
-import ReleasePublished from "components/steps/ReleasePublished";
-import SignAndPublish from "components/steps/SignAndPublishStep";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Publishing } from "pages/Publishing";
+import { Ownership } from "pages/Ownership";
+import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import { DEFAULT_IPFS_API, DEFAULT_IPFS_GATEWAY } from "params";
-import React, { useEffect, useState } from "react";
-import { readIpfsApiUrls, readIpfsGatewayUrl } from "settings";
-import { RepoAddresses, RequestStatus } from "types";
-import { parseUrlQuery } from "utils/urlQuery";
+import { RequestStatus } from "types";
+import ConnectWalletStep from "components/ConnectWalletStep";
 
 export function App() {
-  const [stepper, setStepper] = useState(0);
-
-  //Release states
-  const [dnpName, setDnpName] = useState("");
-  const [version, setVersion] = useState("");
-  const [developerAddress, setDeveloperAddress] = useState("");
-  const [releaseHash, setReleaseHash] = useState("");
-
-  const [repoAddresses, setRepoAddresses] = useState<RepoAddresses>();
-
-  //Wallet states
+  // Wallet states
   const [isConnected, setIsConnected] = useState(false);
   const [isMainnet, setIsMainnet] = useState(false);
   const [account, setAccount] = useState<string | null>(null);
-
   const [providerReq, setProviderReq] = useState<
     RequestStatus<ethers.BrowserProvider>
   >({});
 
-  const [publishReqStatus, setPublishReqStatus] = useState<
-    RequestStatus<string>
-  >({});
-
   // Precomputed variables
   const provider = providerReq.result;
-
-  const [ipfsApiUrls, setIpfsApiUrls] = useState(
-    readIpfsApiUrls() === "" ? DEFAULT_IPFS_API : readIpfsApiUrls(),
-  );
-  const [ipfsGatewayUrl, setIpfsGatewayUrl] = useState(
-    readIpfsGatewayUrl() === "" ? DEFAULT_IPFS_GATEWAY : readIpfsGatewayUrl(),
-  );
-
-  // Set state based on URL parameters
-  useEffect(() => {
-    const urlParams = parseUrlQuery(window.location.search);
-    console.log("URL params", urlParams);
-
-    if (urlParams.r) setDnpName(urlParams.r);
-    if (urlParams.v) setVersion(urlParams.v);
-    if (urlParams.d) setDeveloperAddress(urlParams.d);
-    if (urlParams.h) setReleaseHash(urlParams.h);
-
-    // Check if any URL parameter exists, then set the stepper
-    if (urlParams.r || urlParams.v || urlParams.d || urlParams.h) {
-      setStepper(1);
-    }
-  }, []);
 
   useEffect(() => {
     //Check if wallet already connected
@@ -84,7 +41,6 @@ export function App() {
           setAccount(addresses[0]);
           if (chainId === "0x1") {
             setIsMainnet(true);
-            setStepper(2);
           }
         } catch (e) {
           setProviderReq({ error: e as Error, loading: false });
@@ -95,7 +51,6 @@ export function App() {
 
     if (window.ethereum) {
       getWallet();
-      //window ethereum EIP: https://eips.ethereum.org/EIPS/eip-1193
       window.ethereum.on("chainChanged", (chainId: string) => {
         console.log("event chainChanged: ", chainId);
         window.location.reload();
@@ -106,7 +61,6 @@ export function App() {
         setAccount(accounts[0]);
       });
 
-      // connect, disconnect and message events are not tested due couldn't be triggered
       window.ethereum.on(
         "message",
         (message: { type: string; data: unknown }) => {
@@ -123,93 +77,34 @@ export function App() {
     }
   }, []);
 
-  function Steps() {
-    switch (stepper) {
-      // STEPS:
-      // 0. Introduction
-      // 1. Connect wallet
-      // 2. Edit IPFS settings
-      // 3. ReleaseDetails check
-      // 4. sign and publish
-      // 5. release published
-      case 0:
-        return <IntroductionStep setStepper={setStepper} />;
-      case 1:
-        return (
-          <ConnectWalletStep
-            setStepper={setStepper}
-            account={account}
-            setAccount={setAccount}
-            isMainnet={isMainnet}
-            setIsMainnet={setIsMainnet}
-            isConnected={isConnected}
-            setIsConnected={setIsConnected}
-            provider={window.ethereum}
-            providerReq={providerReq}
-            setProviderReq={setProviderReq}
-          />
-        );
-      case 2:
-        return (
-          <IpfsSettingsStep
-            setStepper={setStepper}
-            ipfsApiUrls={ipfsApiUrls}
-            setIpfsApiUrls={setIpfsApiUrls}
-            ipfsGatewayUrl={ipfsGatewayUrl}
-            setIpfsGatewayUrl={setIpfsGatewayUrl}
-          />
-        );
-      case 3:
-        return (
-          <ReleaseFormStep
-            setStepper={setStepper}
-            dnpName={dnpName}
-            setDnpName={setDnpName}
-            developerAddress={developerAddress}
-            setDeveloperAddress={setDeveloperAddress}
-            version={version}
-            setVersion={setVersion}
-            releaseHash={releaseHash}
-            setReleaseHash={setReleaseHash}
-            provider={provider}
-            ipfsGatewayUrl={ipfsGatewayUrl}
-            repoAddresses={repoAddresses}
-            setRepoAddresses={setRepoAddresses}
-            account={account}
-          />
-        );
-      case 4:
-        return (
-          <SignAndPublish
-            setStepper={setStepper}
-            dnpName={dnpName}
-            devAddress={developerAddress}
-            version={version}
-            releaseHash={releaseHash}
-            provider={provider}
-            account={account}
-            developerAddress={developerAddress}
-            publishReqStatus={publishReqStatus}
-            setPublishReqStatus={setPublishReqStatus}
-            ipfsApiUrls={ipfsApiUrls}
-            ipfsGatewayUrl={ipfsGatewayUrl}
-          />
-        );
-      case 5:
-        return (
-          <ReleasePublished
-            setStepper={setStepper}
-            publishReqStatus={publishReqStatus}
-            repoAddresses={repoAddresses}
-          />
-        );
-    }
-  }
-
   return (
-    <div className="flex h-screen w-screen flex-col overflow-y-scroll bg-background-color">
-      <Header account={account} />
-      <div className=" flex h-full flex-col items-center  pb-5">{Steps()}</div>
-    </div>
+    <Router>
+      <div className="flex h-screen w-screen flex-col overflow-y-scroll bg-background-color">
+        <Header account={account} />
+        {!isConnected || !isMainnet ? (
+          <div className="flex flex-col items-center justify-center">
+            <ConnectWalletStep
+              account={account}
+              setAccount={setAccount}
+              isMainnet={isMainnet}
+              setIsMainnet={setIsMainnet}
+              isConnected={isConnected}
+              setIsConnected={setIsConnected}
+              provider={window.ethereum}
+              providerReq={providerReq}
+              setProviderReq={setProviderReq}
+            />
+          </div>
+        ) : (
+          <Routes>
+            <Route
+              path="/"
+              element={<Publishing account={account} provider={provider} />}
+            />
+            <Route path="/ownership" element={<Ownership />} />
+          </Routes>
+        )}
+      </div>
+    </Router>
   );
 }
