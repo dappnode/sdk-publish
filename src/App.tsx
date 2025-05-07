@@ -1,7 +1,7 @@
 import Header from "components/Header";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Publishing } from "pages/Publishing";
-import { Ownership } from "pages/Ownership";
+import { Publishing } from "pages/publishing/Publishing";
+import { Ownership } from "pages/ownership/Ownership";
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { RequestStatus } from "types";
@@ -101,7 +101,7 @@ export function App() {
               path="/"
               element={<Publishing account={account} provider={provider} />}
             />
-            <Route path="/ownership" element={<Ownership />} />
+            <Route path="/ownership" element={<Ownership account={account} provider={provider} />} />
           </Routes>
         )}
       </div>

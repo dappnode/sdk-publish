@@ -4,11 +4,11 @@ import React, { useEffect, useState } from "react";
 import { readIpfsApiUrls, readIpfsGatewayUrl } from "settings";
 import { RepoAddresses, RequestStatus } from "types";
 import { parseUrlQuery } from "utils/urlQuery";
-import IntroductionStep from "components/steps/IntroductionStep";
-import IpfsSettingsStep from "components/steps/IpfsSettingsStep";
-import ReleaseFormStep from "components/steps/ReleaseFormStep";
-import ReleasePublished from "components/steps/ReleasePublished";
-import SignAndPublish from "components/steps/SignAndPublishStep";
+import IntroductionStep from "pages/publishing/steps/IntroductionStep";
+import IpfsSettingsStep from "pages/publishing/steps/IpfsSettingsStep";
+import ReleaseFormStep from "pages/publishing/steps/ReleaseFormStep";
+import ReleasePublished from "pages/publishing/steps/ReleasePublished";
+import SignAndPublish from "pages/publishing/steps/SignAndPublishStep";
 
 interface PublishingProps {
   account: string | null;

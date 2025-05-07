@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { ReleaseDetails, RequestStatus } from "types";
 import { notNullish } from "utils/notNullish";
-import BaseCard from "../BaseCard";
-import Title from "../Title";
+import BaseCard from "components/BaseCard";
+import Title from "components/Title";
 
 import { ErrorView } from "components/ErrorView";
 import { LoadingView } from "components/LoadingView";
@@ -12,7 +12,7 @@ import { executePublishTx } from "utils/executePublishTx";
 import { fetchReleaseSignature } from "utils/fetchRelease";
 import { resolveDnpName } from "utils/resolveDnpName";
 import { signRelease } from "utils/signRelease";
-import Button from "../Button";
+import Button from "components/Button";
 
 interface SignAndPublishProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;

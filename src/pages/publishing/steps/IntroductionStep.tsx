@@ -1,9 +1,9 @@
 import React from "react";
-import BaseCard from "../BaseCard";
-import Title from "../Title";
-import Link from "../Link";
+import BaseCard from "components/BaseCard";
+import Title from "components/Title";
+import Link from "components/Link";
 import { SDK_INSTALL_URL } from "params";
-import Button from "../Button";
+import Button from "components/Button";
 
 interface IntroductionStepProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
