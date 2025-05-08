@@ -7,7 +7,7 @@ import { RepoAddresses } from "types";
 
 interface OwnershipProps {
   account: string | null;
-  provider: ethers.Provider | undefined;
+  provider: ethers.BrowserProvider | undefined;
 }
 
 export function Ownership({ account, provider }: OwnershipProps) {

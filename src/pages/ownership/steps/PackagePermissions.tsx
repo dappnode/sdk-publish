@@ -6,10 +6,11 @@ import BaseCard from "components/BaseCard";
 import Button from "components/Button";
 import Input from "components/Input";
 import Title from "components/Title";
+import { setNewManager } from "utils/setNewManager";
 
 interface PackagePermissionsProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
-  provider: ethers.Provider;
+  provider: ethers.BrowserProvider;
   dnpName: string;
   account: string | null;
   repoAddress: string;
@@ -43,7 +44,11 @@ export default function PackagePermissions({
         setIsDeveloper(isDev);
 
         // Check if user is manager
-        const managerAddress = await getPackageManagerAddress(dnpName, repoAddress, provider);
+        const managerAddress = await getPackageManagerAddress(
+          dnpName,
+          repoAddress,
+          provider,
+        );
         setIsManager(managerAddress.toLowerCase() === account.toLowerCase());
       } catch (e) {
         console.error("Error checking permissions:", e);
@@ -55,9 +60,10 @@ export default function PackagePermissions({
     checkPermissions();
   }, [account, provider, repoAddress, dnpName]);
 
-  const handleChangeManager = () => {
+  const handleChangeManager = async () => {
     console.log("Change manager to:", newManagerAddress);
-    // Web3 interaction would happen here
+    await setNewManager(newManagerAddress, dnpName, repoAddress, provider);
+
     setNewManagerAddress("");
   };
 
