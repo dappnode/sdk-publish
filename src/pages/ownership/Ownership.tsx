@@ -1,10 +1,11 @@
 import { ethers } from "ethers";
 import React, { useState } from "react";
 import IntroductionStep from "./steps/IntroductionStep";
+import PackageENSStep from "./steps/PackageENSStep";
 
 interface OwnershipProps {
   account: string | null;
-  provider: ethers.BrowserProvider | undefined;
+  provider: ethers.Provider | undefined;
 }
 
 export function Ownership({ account, provider }: OwnershipProps) {
@@ -14,9 +15,12 @@ export function Ownership({ account, provider }: OwnershipProps) {
     switch (stepper) {
       // STEPS:
       // 0. Introduction
+      // 1. Package ENS
 
       case 0:
         return <IntroductionStep setStepper={setStepper} />;
+      case 1:
+        return <PackageENSStep setStepper={setStepper} provider={provider!} />;
     }
   }
 
