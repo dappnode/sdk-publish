@@ -2,11 +2,13 @@ import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
 import { apmRepoIsAllowed } from "utils/apmRepoIsAllowed";
 import { getPackageManagerAddress } from "utils/getPackageManagerAddress";
+import { setNewManager } from "utils/setNewManager";
+import { grantDeveloper } from "utils/grantDeveloper";
+import { revokeDeveloper } from "utils/revokeDeveloper";
 import BaseCard from "components/BaseCard";
 import Button from "components/Button";
 import Input from "components/Input";
 import Title from "components/Title";
-import { setNewManager } from "utils/setNewManager";
 
 interface PackagePermissionsProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
@@ -48,12 +50,15 @@ export default function PackagePermissions({
   const getAddressValidationMessage = (address: string): string | null => {
     if (!address) return null;
     if (!isValidAddress(address)) return "Invalid Ethereum address";
-    
+
     // Only prevent using own address for manager changes
-    if (activeTab === "manager" && address.toLowerCase() === account?.toLowerCase()) {
+    if (
+      activeTab === "manager" &&
+      address.toLowerCase() === account?.toLowerCase()
+    ) {
       return "Cannot transfer manager role to your own address";
     }
-    
+
     return null;
   };
 
@@ -75,12 +80,15 @@ export default function PackagePermissions({
   const isCurrentAddressValid = (): boolean => {
     const address = getCurrentAddress();
     if (!address || !isValidAddress(address)) return false;
-    
+
     // Only prevent using own address for manager changes
-    if (activeTab === "manager" && address.toLowerCase() === account?.toLowerCase()) {
+    if (
+      activeTab === "manager" &&
+      address.toLowerCase() === account?.toLowerCase()
+    ) {
       return false;
     }
-    
+
     return true;
   };
 
@@ -113,7 +121,7 @@ export default function PackagePermissions({
 
   const handleChangeManager = async () => {
     if (!isCurrentAddressValid()) return;
-    
+
     setIsSubmitting(true);
     setError(null);
     try {
@@ -128,12 +136,11 @@ export default function PackagePermissions({
 
   const handleGrantDeveloper = async () => {
     if (!isCurrentAddressValid()) return;
-    
+
     setIsSubmitting(true);
     setError(null);
     try {
-      // TODO: Implement grant developer functionality
-      console.log("Grant developer permission to:", newDeveloperAddress);
+      await grantDeveloper(newDeveloperAddress, dnpName, repoAddress, provider);
       setNewDeveloperAddress("");
     } catch (e) {
       setError(e.message);
@@ -144,12 +151,16 @@ export default function PackagePermissions({
 
   const handleRevokeDeveloper = async () => {
     if (!isCurrentAddressValid()) return;
-    
+
     setIsSubmitting(true);
     setError(null);
     try {
-      // TODO: Implement revoke developer functionality
-      console.log("Revoke developer permission from:", revokeDeveloperAddress);
+      await revokeDeveloper(
+        revokeDeveloperAddress,
+        dnpName,
+        repoAddress,
+        provider,
+      );
       setRevokeDeveloperAddress("");
     } catch (e) {
       setError(e.message);
@@ -242,12 +253,12 @@ export default function PackagePermissions({
                 onChange={(e) => setNewManagerAddress(e.target.value)}
               />
               {getAddressValidationMessage(newManagerAddress) && (
-                <p className="text-sm text-error-red font-poppins">
+                <p className="font-poppins text-sm text-error-red">
                   {getAddressValidationMessage(newManagerAddress)}
                 </p>
               )}
-              <div className="rounded-lg bg-red-50 p-4 font-poppins text-sm text-red-800">
-                ⚠️ <strong>Danger:</strong> Changing the manager will transfer
+              <div className="rounded-lg bg-yellow-50 p-4 font-poppins text-sm text-yellow-800">
+                ⚠️ <strong>Warning:</strong> Changing the manager will transfer
                 full control of this package to the specified address, and you
                 will lose all access. This action is irreversible.
               </div>
@@ -257,7 +268,7 @@ export default function PackagePermissions({
                 you wish to grant developer access, you must do so separately.
               </div>
 
-              <Button 
+              <Button
                 onClick={handleChangeManager}
                 disabled={!isCurrentAddressValid() || isSubmitting}
               >
@@ -276,11 +287,11 @@ export default function PackagePermissions({
                 onChange={(e) => setNewDeveloperAddress(e.target.value)}
               />
               {getAddressValidationMessage(newDeveloperAddress) && (
-                <p className="text-sm text-error-red font-poppins">
+                <p className="font-poppins text-sm text-error-red">
                   {getAddressValidationMessage(newDeveloperAddress)}
                 </p>
               )}
-              <Button 
+              <Button
                 onClick={handleGrantDeveloper}
                 disabled={!isCurrentAddressValid() || isSubmitting}
               >
@@ -299,7 +310,7 @@ export default function PackagePermissions({
                 onChange={(e) => setRevokeDeveloperAddress(e.target.value)}
               />
               {getAddressValidationMessage(revokeDeveloperAddress) && (
-                <p className="text-sm text-error-red font-poppins">
+                <p className="font-poppins text-sm text-error-red">
                   {getAddressValidationMessage(revokeDeveloperAddress)}
                 </p>
               )}
@@ -314,7 +325,7 @@ export default function PackagePermissions({
           )}
 
           {error && (
-            <div className="mt-4 rounded-lg bg-red-50 p-4 font-poppins text-sm text-red-800">
+            <div className="mt-4 overflow-x-scroll rounded-lg bg-red-50 p-4 font-poppins text-sm text-red-800">
               {error}
             </div>
           )}
