@@ -219,6 +219,16 @@ export default function PackagePermissions({
         </div>
       </div>
 
+      {/* Standard User Info */}
+      {!isDeveloper && !isManager && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+          <p className="font-poppins text-sm text-blue-800">
+            As a standard user, you can't publish new versions or manage package
+            permissions.
+          </p>
+        </div>
+      )}
+
       {/* Developer Publishing Link */}
       {isDeveloper && (
         <div className="rounded-lg border border-purple-200 bg-purple-50 p-3">
