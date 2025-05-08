@@ -177,9 +177,9 @@ export default function SignAndPublish({
       })}
 
       {!isAllowedAddress ? (
-        <div className="text-error-red">
+        <div className="text-error-red font-poppins">
           The address{" "}
-          <span className="font-poppins font-medium">{account + " "}</span>
+          <span className="font-medium">{account + " "}</span>
           is not allowed to publish in this repo. Change to an allowed account
           to continue
         </div>
