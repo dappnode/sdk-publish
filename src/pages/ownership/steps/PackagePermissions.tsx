@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
 import { apmRepoIsAllowed } from "utils/apmRepoIsAllowed";
+import { getPackageManagerAddress } from "utils/getPackageManagerAddress";
 import BaseCard from "components/BaseCard";
 import Button from "components/Button";
 import Input from "components/Input";
@@ -37,10 +38,13 @@ export default function PackagePermissions({
 
       setIsLoading(true);
       try {
+        // Check if user is developer
         const isDev = await apmRepoIsAllowed(repoAddress, account, provider);
         setIsDeveloper(isDev);
-        // TODO: Add manager check when available
-        setIsManager(false);
+
+        // Check if user is manager
+        const managerAddress = await getPackageManagerAddress(dnpName, repoAddress, provider);
+        setIsManager(managerAddress.toLowerCase() === account.toLowerCase());
       } catch (e) {
         console.error("Error checking permissions:", e);
       } finally {
@@ -49,7 +53,7 @@ export default function PackagePermissions({
     }
 
     checkPermissions();
-  }, [account, provider, repoAddress]);
+  }, [account, provider, repoAddress, dnpName]);
 
   const handleChangeManager = () => {
     console.log("Change manager to:", newManagerAddress);
