@@ -11,10 +11,16 @@ import Title from "components/Title";
 interface PackageENSStepProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
   provider: ethers.Provider;
+  dnpName: string;
+  setDnpName: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export default function PackageENSStep({ setStepper, provider }: PackageENSStepProps) {
-  const [dnpName, setDnpName] = useState("");
+export default function PackageENSStep({ 
+  setStepper, 
+  provider, 
+  dnpName,
+  setDnpName 
+}: PackageENSStepProps) {
   const [repoAddresses, setRepoAddresses] = useState<RepoAddresses | undefined>();
   const [isResolving, setIsResolving] = useState(false);
 
