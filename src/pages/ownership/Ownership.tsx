@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import IntroductionStep from "./steps/IntroductionStep";
 import PackageENSStep from "./steps/PackageENSStep";
 import PackagePermissions from "./steps/PackagePermissions";
+import { RepoAddresses } from "types";
 
 interface OwnershipProps {
   account: string | null;
@@ -12,6 +13,7 @@ interface OwnershipProps {
 export function Ownership({ account, provider }: OwnershipProps) {
   const [stepper, setStepper] = useState(0);
   const [dnpName, setDnpName] = useState("");
+  const [repoAddresses, setRepoAddresses] = useState<RepoAddresses | undefined>();
 
   function Steps() {
     switch (stepper) {
@@ -29,6 +31,8 @@ export function Ownership({ account, provider }: OwnershipProps) {
             provider={provider!}
             dnpName={dnpName}
             setDnpName={setDnpName}
+            repoAddresses={repoAddresses}
+            setRepoAddresses={setRepoAddresses}
           />
         );
       case 2:
@@ -38,6 +42,7 @@ export function Ownership({ account, provider }: OwnershipProps) {
             provider={provider!}
             dnpName={dnpName}
             account={account}
+            repoAddress={repoAddresses?.repoAddress!}
           />
         );
     }

@@ -13,23 +13,26 @@ interface PackageENSStepProps {
   provider: ethers.Provider;
   dnpName: string;
   setDnpName: React.Dispatch<React.SetStateAction<string>>;
+  repoAddresses: RepoAddresses | undefined;
+  setRepoAddresses: React.Dispatch<RepoAddresses | undefined>
 }
 
 export default function PackageENSStep({ 
   setStepper, 
   provider, 
   dnpName,
-  setDnpName 
+  setDnpName,
+  repoAddresses,
+  setRepoAddresses
 }: PackageENSStepProps) {
-  const [repoAddresses, setRepoAddresses] = useState<RepoAddresses | undefined>();
   const [isResolving, setIsResolving] = useState(false);
 
   useEffect(() => {
     async function checkDnpName(repoName: string, provider: ethers.Provider) {
       setIsResolving(true);
       try {
-        const repoAddress = await resolveDnpName(repoName, provider);
-        setRepoAddresses(repoAddress);
+        const repoAddresses = await resolveDnpName(repoName, provider);
+        setRepoAddresses(repoAddresses);
       } catch (e) {
         // Only log the error but don't clear repoAddresses
         // This prevents the button from being disabled on temporary resolution errors

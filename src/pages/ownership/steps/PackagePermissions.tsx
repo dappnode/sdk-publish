@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
-import React, { useState } from "react";
-import { RepoAddresses } from "types";
+import React, { useEffect, useState } from "react";
+import { apmRepoIsAllowed } from "utils/apmRepoIsAllowed";
 import BaseCard from "components/BaseCard";
 import Button from "components/Button";
 import Input from "components/Input";
@@ -11,6 +11,7 @@ interface PackagePermissionsProps {
   provider: ethers.Provider;
   dnpName: string;
   account: string | null;
+  repoAddress: string;
 }
 
 export default function PackagePermissions({
@@ -18,6 +19,7 @@ export default function PackagePermissions({
   provider,
   dnpName,
   account,
+  repoAddress,
 }: PackagePermissionsProps) {
   const [newManagerAddress, setNewManagerAddress] = useState("");
   const [newDeveloperAddress, setNewDeveloperAddress] = useState("");
@@ -25,14 +27,29 @@ export default function PackagePermissions({
   const [activeTab, setActiveTab] = useState<"manager" | "grant" | "revoke">(
     "manager",
   );
+  const [isManager, setIsManager] = useState(false);
+  const [isDeveloper, setIsDeveloper] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data - in a real app, this would come from your Web3 connection
-  const [packageData] = useState({
-    managerAddress: "0x1234...5678",
-    isManager: true,
-    isDeveloper: true,
-    developers: ["0x9876...5432", "0xabcd...efgh"],
-  });
+  useEffect(() => {
+    async function checkPermissions() {
+      if (!account) return;
+
+      setIsLoading(true);
+      try {
+        const isDev = await apmRepoIsAllowed(repoAddress, account, provider);
+        setIsDeveloper(isDev);
+        // TODO: Add manager check when available
+        setIsManager(false);
+      } catch (e) {
+        console.error("Error checking permissions:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    checkPermissions();
+  }, [account, provider, repoAddress]);
 
   const handleChangeManager = () => {
     console.log("Change manager to:", newManagerAddress);
@@ -52,6 +69,19 @@ export default function PackagePermissions({
     setRevokeDeveloperAddress("");
   };
 
+  if (isLoading) {
+    return (
+      <BaseCard
+        hasBack={() => {
+          setStepper((prevState) => prevState - 1);
+        }}
+      >
+        <Title title={"Package Permissions"} />
+        <p className="font-poppins">Loading permissions...</p>
+      </BaseCard>
+    );
+  }
+
   return (
     <BaseCard
       hasBack={() => {
@@ -59,23 +89,23 @@ export default function PackagePermissions({
       }}
     >
       <Title title={"Package Permissions"} />
-      <p >Manage permissions for package {dnpName}</p>
+      <p className="font-poppins">Manage permissions for package {dnpName}</p>
 
       {/* Role Status */}
-      <div className="rounded-lg border p-3 flex gap-3">
+      <div className="flex gap-3 rounded-lg border p-3">
         <h3 className="mt-1 font-poppins font-medium">Your Roles:</h3>
         <div className="flex flex-wrap gap-2">
-          {packageData.isManager && (
+          {isManager && (
             <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-800">
               Manager
             </span>
           )}
-          {packageData.isDeveloper && (
+          {isDeveloper && (
             <span className="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
               Developer
             </span>
           )}
-          {!packageData.isManager && !packageData.isDeveloper && (
+          {!isManager && !isDeveloper && (
             <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-800">
               Standard User
             </span>
@@ -84,7 +114,7 @@ export default function PackagePermissions({
       </div>
 
       {/* Manager Controls */}
-      {packageData.isManager && (
+      {isManager && (
         <div className="mb-6">
           <div className="mb-4 flex  justify-between border-b">
             <button
@@ -122,9 +152,9 @@ export default function PackagePermissions({
                 onChange={(e) => setNewManagerAddress(e.target.value)}
               />
               <div className="rounded-lg bg-yellow-50 p-4 font-poppins text-sm text-yellow-800">
-                ⚠️ <strong>Warning:</strong> Changing the manager will transfer
-                full control of this package to the specified address, and you
-                will lose all access. This action is irreversible.
+                <strong>Danger:</strong> Changing the manager will transfer full
+                control of this package to the specified address, and you will
+                lose all access. This action is irreversible.
               </div>
               <div className="mt-2 rounded-lg bg-blue-50 p-4 font-poppins text-sm text-blue-800">
                 <strong>Note:</strong> Transferring the manager role does not
