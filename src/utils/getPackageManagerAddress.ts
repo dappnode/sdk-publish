@@ -1,20 +1,17 @@
 import { ethers } from "ethers";
-import publicAclAbi from "contracts/publicAclAbi.json";
-import dnpAclAbi from "contracts/dnpAclAbi.json";
+import publicACL from "contracts/publicACL.json";
+import dnpACL from "contracts/dnpACL.json";
 
 export async function getPackageManagerAddress(
   dnpName: string,
   repoAddress: string,
   provider: ethers.Provider,
 ): Promise<string> {
-  const dnpAclAddress = "0x89d0A07b792754460Faa49e57437B40aA33FB757";
-  const publicAclAddress = "0xFCb2C44E61031AE29e5c54A700FB6B4FB430dA4C";
-
   // Detect if package is public or dnp
   const isDnp = dnpName.includes(".dnp.dappnode.eth");
 
-  const contractABI = isDnp ? dnpAclAbi : publicAclAbi;
-  const contractAddress = isDnp ? dnpAclAddress : publicAclAddress;
+  const contractABI = isDnp ? dnpACL.abi : publicACL.abi;
+  const contractAddress = isDnp ? dnpACL.address : publicACL.address;
 
   // Create contract instance
   const repo = new ethers.Contract(contractAddress, contractABI, provider);
