@@ -316,7 +316,6 @@ export default function PackagePermissions({
               )}
               <Button
                 onClick={handleRevokeDeveloper}
-                className="bg-red-600 text-white hover:bg-red-700"
                 disabled={!isCurrentAddressValid() || isSubmitting}
               >
                 {isSubmitting ? "Processing..." : "Revoke Developer Permission"}
