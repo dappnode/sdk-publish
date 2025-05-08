@@ -9,6 +9,7 @@ import BaseCard from "components/BaseCard";
 import Button from "components/Button";
 import Input from "components/Input";
 import Title from "components/Title";
+import { Link } from "react-router-dom";
 
 interface PackagePermissionsProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
@@ -36,6 +37,7 @@ export default function PackagePermissions({
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [managerAddress, setManagerAddress] = useState<string>("");
 
   // Validate Ethereum address
   const isValidAddress = (address: string): boolean => {
@@ -102,13 +104,14 @@ export default function PackagePermissions({
         const isDev = await apmRepoIsAllowed(repoAddress, account, provider);
         setIsDeveloper(isDev);
 
-        // Check if user is manager
-        const managerAddress = await getPackageManagerAddress(
+        // Check if user is manager and get manager address
+        const managerAddr = await getPackageManagerAddress(
           dnpName,
           repoAddress,
           provider,
         );
-        setIsManager(managerAddress.toLowerCase() === account.toLowerCase());
+        setManagerAddress(managerAddr);
+        setIsManager(managerAddr.toLowerCase() === account.toLowerCase());
       } catch (e) {
         console.error("Error checking permissions:", e);
       } finally {
@@ -189,10 +192,13 @@ export default function PackagePermissions({
       }}
     >
       <Title title={"Package Permissions"} />
-      <p className="font-poppins">Manage permissions for package {dnpName}</p>
+      <p className="font-poppins">
+        Manage permissions for package{" "}
+        <span className="text-purple-500">{dnpName}</span>
+      </p>
 
       {/* Role Status */}
-      <div className="flex gap-3 rounded-lg border p-3">
+      <div className="flex gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
         <h3 className="mt-1 font-poppins font-medium">Your Roles:</h3>
         <div className="flex flex-wrap gap-2">
           {isManager && (
@@ -201,21 +207,74 @@ export default function PackagePermissions({
             </span>
           )}
           {isDeveloper && (
-            <span className="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
+            <span className="rounded-full bg-purple-100 px-3 py-1 text-sm text-purple-800">
               Developer
             </span>
           )}
           {!isManager && !isDeveloper && (
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-800">
+            <span className="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
               Standard User
             </span>
           )}
         </div>
       </div>
 
+      {/* Developer Publishing Link */}
+      {isDeveloper && (
+        <div className="rounded-lg border border-purple-200 bg-purple-50 p-3">
+          <p className="font-poppins text-sm text-purple-800">
+            As a developer, you can{" "}
+            <Link
+              to={`/?r=${dnpName}`}
+              className="font-medium text-purple-600 underline hover:text-purple-700"
+            >
+              publish a new version
+            </Link>{" "}
+            of this package.
+          </p>
+        </div>
+      )}
+      {/* Developers info */}
+      {!isDeveloper && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <h3 className="font-poppins font-medium text-gray-900">
+            Package Developer
+          </h3>
+
+          <p className="mt-2 font-poppins text-sm text-gray-600">
+            Developer addresses are the only ones that can publish new versions
+            of packages. Only the package manager can grant or revoke developer
+            permissions.
+          </p>
+        </div>
+      )}
+      {/* Manager Address Info for non-managers */}
+      {!isManager && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <h3 className="mb-2 font-poppins font-medium text-gray-900">
+            Package Manager
+          </h3>
+          <p className="font-poppins text-sm text-gray-600">
+            This package is managed by:
+          </p>
+          <p className="mt-1 break-all font-mono text-sm text-gray-900">
+            {managerAddress}
+          </p>
+          <p className="mt-2 font-poppins text-sm text-gray-600">
+            Only the manager address can modify permissions for this package.{" "}
+            {!isManager &&
+              !isDeveloper &&
+              "If you want to publish a new version, contact this manager address and ask it to grant you as a developer."}
+            {!isManager &&
+              isDeveloper &&
+              "If you want to grant developer permissions to another address, contact this manager address and ask for it."}
+          </p>
+        </div>
+      )}
+
       {/* Manager Controls */}
       {isManager && (
-        <div className="mb-6">
+        <div>
           <div className="mb-4 flex justify-between border-b">
             <button
               className={`px-4 py-2 font-poppins ${
