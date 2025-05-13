@@ -43,7 +43,7 @@ export default function PackageENSStep({
     }
 
     if (isValidEns(dnpName)) checkDnpName(dnpName, provider);
-  }, [dnpName, provider]);
+  }, [dnpName, provider, setRepoAddresses]);
 
   const validations = [
     dnpName
