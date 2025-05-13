@@ -12,7 +12,7 @@ export default function IntroductionStep({
 }: IntroductionStepProps) {
   return (
     <BaseCard>
-      <Title title={"Check ownership of a package"} />
+      <Title title={"Check packages' ownership"} />
       <p>
         This tool is part of the Dappnode Software Development Kit (dappnodesdk)
         and allows to check if an specified address is the owner or a developer
