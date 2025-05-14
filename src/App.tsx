@@ -78,7 +78,7 @@ export function App() {
   }, []);
 
   return (
-    <Router>
+    <Router basename="/sdk-publish">
       <div className="flex h-screen w-screen flex-col overflow-y-scroll bg-background-color">
         <Header account={account} />
         {!isConnected || !isMainnet ? (
