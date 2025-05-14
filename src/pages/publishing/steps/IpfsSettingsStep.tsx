@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { writeIpfsApiUrls, writeIpfsGatewayUrl } from "settings";
-import BaseCard from "../BaseCard";
-import Button from "../Button";
-import Title from "../Title";
+import BaseCard from "components/BaseCard";
+import Button from "components/Button";
+import Title from "components/Title";
 
 interface IpfsSettingsStepProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;

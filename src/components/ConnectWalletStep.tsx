@@ -1,16 +1,14 @@
-import React, { useEffect, useRef } from "react";
-import BaseCard from "../BaseCard";
-import ConnectWallet from "../ConnectWallet";
-import { SwitchNetwork } from "../SwitchNetwork";
-import Title from "../Title";
-import Button from "../Button";
+import React, { useEffect } from "react";
+import BaseCard from "./BaseCard";
+import ConnectWallet from "./ConnectWallet";
+import { SwitchNetwork } from "./SwitchNetwork";
+import Title from "./Title";
 import { RequestStatus } from "types";
 import { ethers } from "ethers";
 import { LoadingView } from "components/LoadingView";
 import { ErrorView } from "components/ErrorView";
 
 interface ConnectWalletStepProps {
-  setStepper: React.Dispatch<React.SetStateAction<number>>;
   account: string | null;
   setAccount: React.Dispatch<React.SetStateAction<string | null>>;
   isConnected: boolean;
@@ -25,7 +23,6 @@ interface ConnectWalletStepProps {
 }
 
 export default function ConnectWalletStep({
-  setStepper,
   account,
   setAccount,
   isConnected,
@@ -36,7 +33,6 @@ export default function ConnectWalletStep({
   providerReq,
   setProviderReq,
 }: ConnectWalletStepProps) {
-  const prevIsMainnet = useRef(isMainnet);
   useEffect(() => {
     const fetchChain = async () => {
       try {
@@ -64,8 +60,7 @@ export default function ConnectWalletStep({
           console.log("accounts", accounts);
           // store it in state
           setAccount(accounts[0]);
-          if (prevIsMainnet.current !== isMainnet)
-            setStepper((prevState) => prevState + 1);
+      
         })
         .catch((error: { message: string; code: number; data?: unknown }) =>
           console.log("error", error),
@@ -75,8 +70,8 @@ export default function ConnectWalletStep({
   }, [isMainnet]);
 
   return (
-    <BaseCard hasBack={() => setStepper((prevState) => prevState - 1)}>
-      <Title title={"1. Connect your wallet"} />
+    <BaseCard >
+      <Title title={"Connect your wallet"} />
 
       {provider ? (
         !isConnected ? (
@@ -111,19 +106,9 @@ export default function ConnectWalletStep({
             </p>
             <SwitchNetwork setIsMainnet={setIsMainnet} />
           </>
-        ) : !account ? (
+        ) : !account && (
           <p>Any accounts detected</p>
-        ) : (
-          <>
-            <p>
-              Your current ethereum address is:{" "}
-              <span className="tracking-wider text-text-purple">{account}</span>
-            </p>
-            <Button onClick={() => setStepper((prevState) => prevState + 1)}>
-              Next
-            </Button>
-          </>
-        )
+        ) 
       ) : (
         <p>
           No Ethereum wallet extension detected on browser. Please, install

@@ -1,8 +1,8 @@
 import React from "react";
 import { RepoAddresses, RequestStatus } from "types";
-import BaseCard from "../BaseCard";
-import Button from "../Button";
-import Title from "../Title";
+import BaseCard from "components/BaseCard";
+import Button from "components/Button";
+import Title from "components/Title";
 import Link from "components/Link";
 
 interface IntroductionStepProps {

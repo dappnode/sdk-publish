@@ -9,10 +9,10 @@ import { isValidBump } from "utils/isValidBump";
 import { isValidEns } from "utils/isValidEns";
 import { notNullish } from "utils/notNullish";
 import { resolveDnpName } from "utils/resolveDnpName";
-import BaseCard from "../BaseCard";
-import Button from "../Button";
-import Input from "../Input";
-import Title from "../Title";
+import BaseCard from "components/BaseCard";
+import Button from "components/Button";
+import Input from "components/Input";
+import Title from "components/Title";
 
 interface ReleaseFormProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
