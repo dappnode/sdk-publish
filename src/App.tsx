@@ -1,5 +1,5 @@
 import Header from "components/Header";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Publishing } from "pages/publishing/Publishing";
 import { Ownership } from "pages/ownership/Ownership";
 import React, { useState, useEffect } from "react";
@@ -99,13 +99,12 @@ export function App() {
           <Routes>
             <Route
               path="/"
-              element={<Navigate to="/sdk-publish" replace />}
-            />
-            <Route
-              path="/sdk-publish"
               element={<Publishing account={account} provider={provider} />}
             />
-            <Route path="/sdk-publish/ownership" element={<Ownership account={account} provider={provider} />} />
+            <Route
+              path="/ownership"
+              element={<Ownership account={account} provider={provider} />}
+            />
           </Routes>
         )}
       </div>
