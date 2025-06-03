@@ -79,13 +79,6 @@ export async function executePublishTx(
       registryContract.abi,
       signer
     );
-    unsignedTx = await registry.newRepoWithVersion(
-      shortName, // string _name
-      developerAddress, // address _dev
-      version.split("."), // uint16[3] _initialSemanticVersion
-      contractAddress, // address _contractAddress
-      contentURI // bytes _contentURI
-    );
     unsignedTx = {
       to: registryAddress,
       data: registry.interface.encodeFunctionData("newRepoWithVersion", [
