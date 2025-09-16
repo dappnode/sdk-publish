@@ -21,6 +21,11 @@ createAppKit({
   themeMode: "light",
   features: {
     analytics: true,
+    email: false,
+    socials: false,
+    connectMethodsOrder: ["wallet"],
+    swaps: false,
+    onramp: false,
   },
 });
 
