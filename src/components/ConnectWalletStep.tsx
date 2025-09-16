@@ -10,7 +10,6 @@ export default function ConnectWalletStep() {
   return (
     <BaseCard>
       <Title title={"Connect your wallet"} />
-
       <Button onClick={() => open({ view: "Connect" })}>Connect Wallet</Button>
     </BaseCard>
   );

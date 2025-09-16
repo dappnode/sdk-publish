@@ -22,9 +22,6 @@ createAppKit({
   features: {
     analytics: true,
   },
-  themeVariables: {
-    "--w3m-accent": "#000000",
-  },
 });
 
 export function App() {
