@@ -9,7 +9,8 @@ import { parseIpfsPath } from "./isIpfsHash";
 
 export async function signRelease(
   releaseHash: string,
-  ipfsApiUrls: string[]
+  ipfsApiUrls: string[],
+  provider: ethers.BrowserProvider,
 ): Promise<string> {
   if (ipfsApiUrls.length < 1) {
     throw Error("ipfsApiUrls is empty");
@@ -33,8 +34,6 @@ export async function signRelease(
   const releaseFiles = dagGetToFiles(releaseRootDag);
   const cidOpts: ReleaseSignature["cid"] = { version: 0, base: "base58btc" };
   const signedData = serializeIpfsDirectory(releaseFiles, cidOpts);
-
-  const provider = new ethers.BrowserProvider(window.ethereum);
 
   // The Metamask plugin also allows signing transactions to
   // send ether and pay to change state within the blockchain.

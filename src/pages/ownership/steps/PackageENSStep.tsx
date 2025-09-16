@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { RepoAddresses } from "types";
 import { isValidEns } from "utils/isValidEns";
 import { resolveDnpName } from "utils/resolveDnpName";
@@ -7,29 +7,28 @@ import BaseCard from "components/BaseCard";
 import Button from "components/Button";
 import Input from "components/Input";
 import Title from "components/Title";
+import { useWallet } from "wallet/useWallet";
 
 interface PackageENSStepProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
-  provider: ethers.Provider;
   dnpName: string;
   setDnpName: React.Dispatch<React.SetStateAction<string>>;
   repoAddresses: RepoAddresses | undefined;
-  setRepoAddresses: React.Dispatch<RepoAddresses | undefined>
+  setRepoAddresses: React.Dispatch<RepoAddresses | undefined>;
 }
 
-export default function PackageENSStep({ 
-  setStepper, 
-  provider, 
+export default function PackageENSStep({
+  setStepper,
   dnpName,
   setDnpName,
   repoAddresses,
-  setRepoAddresses
+  setRepoAddresses,
 }: PackageENSStepProps) {
-  const [isResolving, setIsResolving] = useState(false);
+  const { getProvider } = useWallet();
+  const provider = getProvider();
 
   useEffect(() => {
     async function checkDnpName(repoName: string, provider: ethers.Provider) {
-      setIsResolving(true);
       try {
         const repoAddresses = await resolveDnpName(repoName, provider);
         setRepoAddresses(repoAddresses);
@@ -38,7 +37,6 @@ export default function PackageENSStep({
         // This prevents the button from being disabled on temporary resolution errors
         console.error(`Error resolving dnpName ${repoName}`, e);
       } finally {
-        setIsResolving(false);
       }
     }
 
@@ -98,19 +96,17 @@ export default function PackageENSStep({
               <div
                 key={i}
                 className={`mt-2 font-poppins text-xs ${
-                  validation.isValid
-                    ? "text-success-green"
-                    : "text-error-red"
+                  validation.isValid ? "text-success-green" : "text-error-red"
                 }`}
               >
                 {validation.message}
               </div>
-            )
+            ),
         )}
       </div>
       <Button
         onClick={() => setStepper((prevState) => prevState + 1)}
-        disabled={errors.length > 0 || !dnpName || !repoAddresses?.repoAddress || isResolving}
+        disabled={errors.length > 0 || !dnpName || !repoAddresses?.repoAddress}
       >
         Next
       </Button>

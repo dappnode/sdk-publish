@@ -13,6 +13,7 @@ import { fetchReleaseSignature } from "utils/fetchRelease";
 import { resolveDnpName } from "utils/resolveDnpName";
 import { signRelease } from "utils/signRelease";
 import Button from "components/Button";
+import { useWallet } from "wallet/useWallet";
 
 interface SignAndPublishProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
@@ -20,8 +21,6 @@ interface SignAndPublishProps {
   devAddress: string;
   version: string;
   releaseHash: string;
-  provider: any;
-  account: string | null;
   developerAddress: string;
   publishReqStatus: RequestStatus<string>;
   setPublishReqStatus: React.Dispatch<
@@ -37,14 +36,15 @@ export default function SignAndPublish({
   devAddress,
   version,
   releaseHash,
-  provider,
-  account,
   developerAddress,
   publishReqStatus,
   setPublishReqStatus,
   ipfsApiUrls,
   ipfsGatewayUrl,
 }: SignAndPublishProps) {
+  const { address: account, getProvider } = useWallet();
+  const provider = getProvider();
+
   const [signedReleaseHash, setSignedReleaseHash] = useState<string>("");
 
   const [isSigned, setIsSigned] = useState<boolean | null>(null);
@@ -102,6 +102,7 @@ export default function SignAndPublish({
       const newReleaseHash = await signRelease(
         releaseHash,
         parseIpfsUrls(ipfsApiUrls),
+        provider,
       );
       await fetchReleaseSignature(newReleaseHash, ipfsGatewayUrl);
       setSignReq({ result: newReleaseHash });
@@ -177,9 +178,8 @@ export default function SignAndPublish({
       })}
 
       {!isAllowedAddress ? (
-        <div className="text-error-red font-poppins">
-          The address{" "}
-          <span className="font-medium">{account + " "}</span>
+        <div className="font-poppins text-error-red">
+          The address <span className="font-medium">{account + " "}</span>
           is not allowed to publish in this repo. Change to an allowed account
           to continue
         </div>
