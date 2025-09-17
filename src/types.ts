@@ -1,10 +1,3 @@
-declare global {
-  interface Window {
-    ethereum: any;
-    web3: any;
-  }
-}
-
 export interface RequestStatus<R = unknown> {
   result?: R;
   loading?: boolean;

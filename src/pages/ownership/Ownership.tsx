@@ -1,19 +1,15 @@
-import { ethers } from "ethers";
 import React, { useState } from "react";
 import IntroductionStep from "./steps/IntroductionStep";
 import PackageENSStep from "./steps/PackageENSStep";
 import PackagePermissions from "./steps/PackagePermissions";
 import { RepoAddresses } from "types";
 
-interface OwnershipProps {
-  account: string | null;
-  provider: ethers.BrowserProvider | undefined;
-}
-
-export function Ownership({ account, provider }: OwnershipProps) {
+export function Ownership() {
   const [stepper, setStepper] = useState(0);
   const [dnpName, setDnpName] = useState("");
-  const [repoAddresses, setRepoAddresses] = useState<RepoAddresses | undefined>();
+  const [repoAddresses, setRepoAddresses] = useState<
+    RepoAddresses | undefined
+  >();
 
   function Steps() {
     switch (stepper) {
@@ -28,7 +24,6 @@ export function Ownership({ account, provider }: OwnershipProps) {
         return (
           <PackageENSStep
             setStepper={setStepper}
-            provider={provider!}
             dnpName={dnpName}
             setDnpName={setDnpName}
             repoAddresses={repoAddresses}
@@ -39,9 +34,7 @@ export function Ownership({ account, provider }: OwnershipProps) {
         return (
           <PackagePermissions
             setStepper={setStepper}
-            provider={provider!}
             dnpName={dnpName}
-            account={account}
             repoAddress={repoAddresses?.repoAddress!}
           />
         );

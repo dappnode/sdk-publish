@@ -2,109 +2,48 @@ import Header from "components/Header";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Publishing } from "pages/publishing/Publishing";
 import { Ownership } from "pages/ownership/Ownership";
-import React, { useState, useEffect } from "react";
-import { ethers } from "ethers";
-import { RequestStatus } from "types";
+import React from "react";
 import ConnectWalletStep from "components/ConnectWalletStep";
+import { createAppKit } from "@reown/appkit/react";
+import {
+  ethersAdapter,
+  metadata,
+  networks,
+  projectId,
+} from "wallet/walletConfig";
+import { useWallet } from "wallet/useWallet";
+
+createAppKit({
+  adapters: [ethersAdapter],
+  networks,
+  metadata,
+  projectId,
+  themeMode: "light",
+  features: {
+    analytics: true,
+    email: false,
+    socials: false,
+    connectMethodsOrder: ["wallet"],
+    swaps: false,
+    onramp: false,
+  },
+});
 
 export function App() {
-  // Wallet states
-  const [isConnected, setIsConnected] = useState(false);
-  const [isMainnet, setIsMainnet] = useState(false);
-  const [account, setAccount] = useState<string | null>(null);
-  const [providerReq, setProviderReq] = useState<
-    RequestStatus<ethers.BrowserProvider>
-  >({});
-
-  // Precomputed variables
-  const provider = providerReq.result;
-
-  useEffect(() => {
-    //Check if wallet already connected
-    const getWallet = async () => {
-      const addresses: string[] = await window.ethereum.request({
-        method: "eth_accounts",
-      });
-      console.log(`addresses is ${addresses}`);
-      if (addresses.length > 0) {
-        setProviderReq({ loading: true });
-        setIsConnected(true);
-        setProviderReq({
-          result: new ethers.BrowserProvider(window.ethereum),
-          loading: false,
-        });
-        try {
-          const chainId = await window.ethereum.request({
-            method: "eth_chainId",
-          });
-
-          setAccount(addresses[0]);
-          if (chainId === "0x1") {
-            setIsMainnet(true);
-          }
-        } catch (e) {
-          setProviderReq({ error: e as Error, loading: false });
-          console.error("Error fetching chainId:", e);
-        }
-      }
-    };
-
-    if (window.ethereum) {
-      getWallet();
-      window.ethereum.on("chainChanged", (chainId: string) => {
-        console.log("event chainChanged: ", chainId);
-        window.location.reload();
-      });
-      window.ethereum.on("accountsChanged", (accounts: Array<string>) => {
-        console.log("event accountsChanged");
-        console.log("accounts", accounts);
-        setAccount(accounts[0]);
-      });
-
-      window.ethereum.on(
-        "message",
-        (message: { type: string; data: unknown }) => {
-          console.log("event message", message);
-        },
-      );
-      window.ethereum.on(
-        "disconnect",
-        (error: { message: string; code: number; data?: unknown }) => {
-          console.log("disconnect", error);
-          setIsConnected(false);
-        },
-      );
-    }
-  }, []);
+  const { isConnected } = useWallet();
 
   return (
     <Router basename="/sdk-publish">
       <div className="flex h-screen w-screen flex-col overflow-y-scroll bg-background-color">
-        <Header account={account} />
-        {!isConnected || !isMainnet ? (
+        <Header />
+        {!isConnected ? (
           <div className="flex flex-col items-center justify-center">
-            <ConnectWalletStep
-              account={account}
-              setAccount={setAccount}
-              isMainnet={isMainnet}
-              setIsMainnet={setIsMainnet}
-              isConnected={isConnected}
-              setIsConnected={setIsConnected}
-              provider={window.ethereum}
-              providerReq={providerReq}
-              setProviderReq={setProviderReq}
-            />
+            <ConnectWalletStep />
           </div>
         ) : (
           <Routes>
-            <Route
-              path="/"
-              element={<Publishing account={account} provider={provider} />}
-            />
-            <Route
-              path="/ownership"
-              element={<Ownership account={account} provider={provider} />}
-            />
+            <Route path="/" element={<Publishing />} />
+            <Route path="/ownership" element={<Ownership />} />
           </Routes>
         )}
       </div>

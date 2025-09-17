@@ -1,4 +1,3 @@
-import { ethers } from "ethers";
 import { DEFAULT_IPFS_API, DEFAULT_IPFS_GATEWAY } from "params";
 import React, { useEffect, useState } from "react";
 import { readIpfsApiUrls, readIpfsGatewayUrl } from "settings";
@@ -10,12 +9,7 @@ import ReleaseFormStep from "pages/publishing/steps/ReleaseFormStep";
 import ReleasePublished from "pages/publishing/steps/ReleasePublished";
 import SignAndPublish from "pages/publishing/steps/SignAndPublishStep";
 
-interface PublishingProps {
-  account: string | null;
-  provider: ethers.BrowserProvider | undefined;
-}
-
-export function Publishing({ account, provider }: PublishingProps) {
+export function Publishing() {
   const [stepper, setStepper] = useState(0);
 
   //Release states
@@ -26,7 +20,9 @@ export function Publishing({ account, provider }: PublishingProps) {
 
   const [repoAddresses, setRepoAddresses] = useState<RepoAddresses>();
 
-  const [publishReqStatus, setPublishReqStatus] = useState<RequestStatus<string>>({});
+  const [publishReqStatus, setPublishReqStatus] = useState<
+    RequestStatus<string>
+  >({});
 
   const [ipfsApiUrls, setIpfsApiUrls] = useState(
     readIpfsApiUrls() === "" ? DEFAULT_IPFS_API : readIpfsApiUrls(),
@@ -83,11 +79,9 @@ export function Publishing({ account, provider }: PublishingProps) {
             setVersion={setVersion}
             releaseHash={releaseHash}
             setReleaseHash={setReleaseHash}
-            provider={provider}
             ipfsGatewayUrl={ipfsGatewayUrl}
             repoAddresses={repoAddresses}
             setRepoAddresses={setRepoAddresses}
-            account={account}
           />
         );
       case 3:
@@ -98,8 +92,6 @@ export function Publishing({ account, provider }: PublishingProps) {
             devAddress={developerAddress}
             version={version}
             releaseHash={releaseHash}
-            provider={provider}
-            account={account}
             developerAddress={developerAddress}
             publishReqStatus={publishReqStatus}
             setPublishReqStatus={setPublishReqStatus}
@@ -119,8 +111,6 @@ export function Publishing({ account, provider }: PublishingProps) {
   }
 
   return (
-    <div className="flex h-full flex-col items-center pb-5">
-      {Steps()}
-    </div>
+    <div className="flex h-full flex-col items-center pb-5">{Steps()}</div>
   );
-} 
+}

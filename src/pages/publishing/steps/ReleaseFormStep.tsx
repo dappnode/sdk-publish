@@ -13,6 +13,7 @@ import BaseCard from "components/BaseCard";
 import Button from "components/Button";
 import Input from "components/Input";
 import Title from "components/Title";
+import { useWallet } from "wallet/useWallet";
 
 interface ReleaseFormProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
@@ -24,13 +25,11 @@ interface ReleaseFormProps {
   setVersion: React.Dispatch<React.SetStateAction<string>>;
   releaseHash: string;
   setReleaseHash: React.Dispatch<React.SetStateAction<string>>;
-  provider: any;
   ipfsGatewayUrl: string;
   repoAddresses: RepoAddresses | undefined;
   setRepoAddresses: React.Dispatch<
     React.SetStateAction<RepoAddresses | undefined>
   >;
-  account: string | null;
 }
 
 export default function ReleaseForm({
@@ -43,12 +42,13 @@ export default function ReleaseForm({
   setVersion,
   releaseHash,
   setReleaseHash,
-  provider,
   ipfsGatewayUrl,
   repoAddresses,
   setRepoAddresses,
-  account,
 }: ReleaseFormProps) {
+  const { address: account, getProvider } = useWallet();
+  const provider = getProvider();
+
   const [latestVersion, setLatestVersion] = useState<string>();
   const [manifest, setManifest] = useState<
     (Manifest & { hash: string }) | null
@@ -59,7 +59,6 @@ export default function ReleaseForm({
 
   useEffect(() => {
     async function checkManifest(hash: string) {
-      console.log(`errors lenght: ${errors.length}`);
       try {
         const manifest = await fetchManifest(hash, ipfsGatewayUrl);
         setManifest({ ...manifest, hash });
@@ -238,7 +237,7 @@ export default function ReleaseForm({
             Setting a developer address will restrict future releases when
             publishing. Read this before going forward:
           </p>
-          <ul className="flex list-disc flex-col gap-5 pl-5 font-poppins marker:text-text-purple">
+          <ul className="flex list-disc flex-col gap-3 pl-5 font-poppins marker:text-text-purple">
             <li>
               Only the specified developer address will be able to publish new
               versions of this package.

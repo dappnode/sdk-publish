@@ -10,22 +10,23 @@ import Button from "components/Button";
 import Input from "components/Input";
 import Title from "components/Title";
 import { Link } from "react-router-dom";
+import { useWallet } from "wallet/useWallet";
 
 interface PackagePermissionsProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
-  provider: ethers.BrowserProvider;
   dnpName: string;
-  account: string | null;
   repoAddress: string;
 }
 
 export default function PackagePermissions({
   setStepper,
-  provider,
   dnpName,
-  account,
   repoAddress,
 }: PackagePermissionsProps) {
+  const { address: account, getProvider } = useWallet();
+  const provider = getProvider();
+
+  const [isLoading, setIsLoading] = useState(true);
   const [newManagerAddress, setNewManagerAddress] = useState("");
   const [newDeveloperAddress, setNewDeveloperAddress] = useState("");
   const [revokeDeveloperAddress, setRevokeDeveloperAddress] = useState("");
@@ -34,7 +35,6 @@ export default function PackagePermissions({
   );
   const [isManager, setIsManager] = useState(false);
   const [isDeveloper, setIsDeveloper] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [managerAddress, setManagerAddress] = useState<string>("");
@@ -97,8 +97,6 @@ export default function PackagePermissions({
   useEffect(() => {
     async function checkPermissions() {
       if (!account) return;
-
-      setIsLoading(true);
       try {
         // Check if user is developer
         const isDev = await apmRepoIsAllowed(repoAddress, account, provider);
