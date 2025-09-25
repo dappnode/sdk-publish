@@ -22,9 +22,8 @@ export async function signRelease(
   // Format release hash, remove prefix
   const releaseCID = CID.parse(parseIpfsPath(releaseHash));
 
-  const releaseRootDag: IpfsDagGetResult<IpfsDagPbValue> = await ipfs.dag.get(
-    releaseCID
-  );
+  const releaseRootDag: IpfsDagGetResult<IpfsDagPbValue> =
+    await ipfs.dag.get(releaseCID);
 
   const releaseFilenames = dagGetToFilenames(releaseRootDag);
   if (releaseFilenames.find((filename) => filename === signatureFileName)) {
@@ -84,10 +83,10 @@ export async function signRelease(
   // Validate that the new release hash contains all previous files + signature
   const newReleaseRootDag = await ipfs.dag.get(newReleaseCid);
   const newFilesStr = JSON.stringify(
-    dagGetToFilenames(newReleaseRootDag).sort()
+    dagGetToFilenames(newReleaseRootDag).sort(),
   );
   const expectedFilesStr = JSON.stringify(
-    [...releaseFiles.map((file) => file.name), signatureFileName].sort()
+    [...releaseFiles.map((file) => file.name), signatureFileName].sort(),
   );
   if (newFilesStr !== expectedFilesStr) {
     throw Error(`Wrong files in new release: ${newFilesStr}`);
@@ -135,7 +134,7 @@ interface IpfsDagGetResult<V> {
  */
 function serializeIpfsDirectory(
   files: { name: string; cid: CID }[],
-  opts: ReleaseSignature["cid"]
+  opts: ReleaseSignature["cid"],
 ): string {
   return (
     files
@@ -146,7 +145,7 @@ function serializeIpfsDirectory(
       .map((file) => {
         const cidStr = cidToString(
           getCidAtVersion(file.cid, opts.version),
-          opts.base
+          opts.base,
         );
         return `${file.name} ${cidStr}`;
       })
@@ -199,7 +198,7 @@ function cidToString(cid: CID, base: string): string {
 }
 
 function dagGetToFiles(
-  content: IpfsDagGetResult<IpfsDagPbValue>
+  content: IpfsDagGetResult<IpfsDagPbValue>,
 ): { name: string; cid: CID }[] {
   return content.value.Links.map((link) => ({
     cid: CID.parse(parseIpfsPath(link.Hash.toString())),
@@ -208,7 +207,7 @@ function dagGetToFiles(
 }
 
 function dagGetToFilenames(
-  content: IpfsDagGetResult<IpfsDagPbValue>
+  content: IpfsDagGetResult<IpfsDagPbValue>,
 ): string[] {
   return content.value.Links.map((link) => link.Name);
 }
