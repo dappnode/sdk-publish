@@ -15,7 +15,7 @@ export async function executePublishTx(
     manifestHash: string;
     developerAddress?: string;
   },
-  provider: ethers.BrowserProvider
+  provider: ethers.BrowserProvider,
 ) {
   if (!dnpName) throw Error("dnpName must be defined");
   if (!version) throw Error("version must be defined");
@@ -24,7 +24,7 @@ export async function executePublishTx(
   const signer = await provider.getSigner();
   const { registryAddress, repoAddress } = await resolveDnpName(
     dnpName,
-    provider
+    provider,
   );
 
   // Compute tx data
@@ -77,7 +77,7 @@ export async function executePublishTx(
     const registry = new ethers.Contract(
       registryAddress,
       registryContract.abi,
-      signer
+      signer,
     );
     unsignedTx = {
       to: registryAddress,

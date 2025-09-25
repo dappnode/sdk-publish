@@ -4,7 +4,7 @@ import repoContract from "contracts/repository.json";
 export async function apmRepoIsAllowed(
   repoAddress: string,
   userAddress: string,
-  provider: ethers.Provider
+  provider: ethers.Provider,
 ): Promise<boolean> {
   const repo = new ethers.Contract(repoAddress, repoContract.abi, provider);
 
@@ -12,7 +12,7 @@ export async function apmRepoIsAllowed(
     return await repo.canPerform(
       userAddress,
       "0x0000000000000000000000000000000000000000000000000000000000000001",
-      []
+      [],
     );
   } catch (e) {
     // Rename error for user comprehension

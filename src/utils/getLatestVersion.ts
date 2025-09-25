@@ -3,7 +3,7 @@ import repoContract from "contracts/repository.json";
 
 export async function getLatestVersion(
   repoAddress: string,
-  provider: ethers.Provider
+  provider: ethers.Provider,
 ): Promise<string> {
   const repo = new ethers.Contract(repoAddress, repoContract.abi, provider);
 
