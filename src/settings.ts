@@ -1,3 +1,5 @@
+import { DEFAULT_IPFS_GATEWAY, LEGACY_IPFS_GATEWAY } from "params";
+
 const ipfsApiUrlsKey = "ipfs-api-urls";
 
 export function readIpfsApiUrls(): string {
@@ -11,7 +13,13 @@ export function writeIpfsApiUrls(ipfsApiUrls: string): void {
 const ipfsGatewayUrlKey = "ipfs-gateway-urls";
 
 export function readIpfsGatewayUrl(): string {
-  return localStorage.getItem(ipfsGatewayUrlKey) ?? "";
+  const storedGateway = localStorage.getItem(ipfsGatewayUrlKey) ?? "";
+  // Overwrite legacy gateway with the new default
+  if (storedGateway === LEGACY_IPFS_GATEWAY) {
+    writeIpfsGatewayUrl(DEFAULT_IPFS_GATEWAY);
+    return DEFAULT_IPFS_GATEWAY;
+  }
+  return storedGateway;
 }
 
 export function writeIpfsGatewayUrl(ipfsGatewayUrl: string): void {

@@ -3,6 +3,7 @@
 //export const DEFAULT_IPFS_GATEWAY = "https://cloudflare-ipfs.com";
 export const DEFAULT_IPFS_GATEWAY = "https://ipfs-gateway-dev.dappnode.net";
 export const DEFAULT_IPFS_API = "https://api.ipfs.dappnode.io/";
+export const LEGACY_IPFS_GATEWAY = "https://gateway-dev.ipfs.dappnode.io";
 
 export const SDK_GUIDE_LINK =
   "https://github.com/dappnode/DAppNodeSDK/wiki/DAppNode-SDK-tutorial";
