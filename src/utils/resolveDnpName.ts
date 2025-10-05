@@ -3,7 +3,7 @@ import { RepoAddresses } from "types";
 
 export async function resolveDnpName(
   dnpName: string,
-  provider: ethers.Provider
+  provider: ethers.Provider,
 ): Promise<RepoAddresses> {
   const registryName = parseRegistryName(dnpName);
   const [registryAddress, repoAddress] = await Promise.all([
@@ -23,7 +23,7 @@ export async function resolveDnpName(
 // Change behaviour to return null if not found
 async function resolveEns(
   ensName: string,
-  provider: ethers.Provider
+  provider: ethers.Provider,
 ): Promise<string | null> {
   try {
     return await provider.resolveName(ensName);
