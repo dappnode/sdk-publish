@@ -1,6 +1,6 @@
 import { DEFAULT_IPFS_API, DEFAULT_IPFS_GATEWAY } from "params";
 import React, { useEffect, useState } from "react";
-import { readIpfsApiUrls, readIpfsGatewayUrl } from "settings";
+import { readIpfsApiUrls, readIpfsGatewayUrl, readPropagationUrl } from "settings";
 import { RepoAddresses, RequestStatus } from "types";
 import { parseUrlQuery } from "utils/urlQuery";
 import IntroductionStep from "pages/publishing/steps/IntroductionStep";
@@ -30,6 +30,7 @@ export function Publishing() {
   const [ipfsGatewayUrl, setIpfsGatewayUrl] = useState(
     readIpfsGatewayUrl() === "" ? DEFAULT_IPFS_GATEWAY : readIpfsGatewayUrl(),
   );
+  const [propagationUrl, setPropagationUrl] = useState(readPropagationUrl());
 
   // Set state based on URL parameters
   useEffect(() => {
@@ -65,6 +66,8 @@ export function Publishing() {
             setIpfsApiUrls={setIpfsApiUrls}
             ipfsGatewayUrl={ipfsGatewayUrl}
             setIpfsGatewayUrl={setIpfsGatewayUrl}
+            propagationUrl={propagationUrl}
+            setPropagationUrl={setPropagationUrl}
           />
         );
       case 2:
@@ -97,6 +100,7 @@ export function Publishing() {
             setPublishReqStatus={setPublishReqStatus}
             ipfsApiUrls={ipfsApiUrls}
             ipfsGatewayUrl={ipfsGatewayUrl}
+            propagationUrl={propagationUrl}
           />
         );
       case 4:

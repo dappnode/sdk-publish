@@ -10,6 +10,10 @@ import { parseIpfsUrls } from "settings";
 import { apmRepoIsAllowed } from "utils/apmRepoIsAllowed";
 import { executePublishTx } from "utils/executePublishTx";
 import { fetchReleaseSignature } from "utils/fetchRelease";
+import {
+  checkPropagationWhitelist,
+  propagateRelease,
+} from "utils/propagateRelease";
 import { resolveDnpName } from "utils/resolveDnpName";
 import { signRelease } from "utils/signRelease";
 import Button from "components/Button";
@@ -28,6 +32,7 @@ interface SignAndPublishProps {
   >;
   ipfsApiUrls: string;
   ipfsGatewayUrl: string;
+  propagationUrl: string;
 }
 
 export default function SignAndPublish({
@@ -41,6 +46,7 @@ export default function SignAndPublish({
   setPublishReqStatus,
   ipfsApiUrls,
   ipfsGatewayUrl,
+  propagationUrl,
 }: SignAndPublishProps) {
   const { address: account, getProvider } = useWallet();
   const provider = getProvider();
@@ -53,6 +59,14 @@ export default function SignAndPublish({
   const [isAllowedAddress, setIsAllowedAddress] = useState<boolean | null>(
     null,
   );
+
+  const [isPropagationWhitelisted, setIsPropagationWhitelisted] = useState<
+    boolean | null
+  >(null);
+  const [propagationStatus, setPropagationStatus] = useState<
+    "idle" | "signing" | "dispatched" | "error"
+  >("idle");
+  const [propagationError, setPropagationError] = useState<string | null>(null);
 
   //Checks if the wallet address is whitelisted to publish
   useEffect(() => {
@@ -74,6 +88,37 @@ export default function SignAndPublish({
       })();
     }
   }, [account, dnpName, provider]);
+
+  // Check propagation whitelist after release is signed
+  useEffect(() => {
+    if (signedReleaseHash && propagationUrl && account) {
+      checkPropagationWhitelist(propagationUrl, account).then(
+        setIsPropagationWhitelisted,
+      );
+    }
+  }, [signedReleaseHash, propagationUrl, account]);
+
+  async function doPropagate() {
+    try {
+      if (!signReq.result) return;
+      setPropagationStatus("signing");
+      setPropagationError(null);
+      const signer = await provider.getSigner();
+      await propagateRelease(
+        propagationUrl,
+        signReq.result,
+        signer,
+        account!,
+      );
+      setPropagationStatus("dispatched");
+    } catch (e) {
+      console.warn("Propagation failed", e);
+      setPropagationStatus("error");
+      setPropagationError(
+        e instanceof Error ? e.message : "Propagation failed",
+      );
+    }
+  }
 
   const details: ReleaseDetails[] = [
     {
@@ -206,6 +251,33 @@ export default function SignAndPublish({
           <p className="text-center text-success-green">
             The release is ready to be published
           </p>
+
+          {isPropagationWhitelisted && propagationStatus === "idle" && (
+            <div className="rounded-xl border border-text-purple/20 p-3">
+              <p className="text-sm font-medium text-text-purple">
+                Propagate to DAppNode network
+              </p>
+              <p className="mb-2 text-xs text-gray-500">
+                Pin and advertise this release across DAppNode infrastructure.
+                This requires one additional signature.
+              </p>
+              <Button onClick={doPropagate}>Propagate</Button>
+            </div>
+          )}
+          {propagationStatus === "signing" && (
+            <LoadingView steps={["Signing propagation request"]} />
+          )}
+          {propagationStatus === "dispatched" && (
+            <p className="text-center text-sm text-success-green">
+              Propagation dispatched successfully
+            </p>
+          )}
+          {propagationStatus === "error" && (
+            <p className="text-center text-sm text-orange-500">
+              Propagation failed: {propagationError}. You can still publish.
+            </p>
+          )}
+
           {publishReqStatus.error && (
             <div className="text-sm text-error-red">
               Error while trying to publish the release. For more information
