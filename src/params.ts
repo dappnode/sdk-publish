@@ -11,3 +11,7 @@ export const SDK_INSTALL_URL = "https://github.com/dappnode/DAppNodeSDK";
 
 export const signatureFileName = "signature.json";
 export const manifestFileName = "dappnode_package.json";
+
+// Propagation
+export const DEFAULT_PROPAGATION_URL =
+  process.env.REACT_APP_PROPAGATION_URL || "https://bot.dappnode.net";
