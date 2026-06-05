@@ -51,3 +51,31 @@ export async function propagateRelease(
     );
   }
 }
+
+export async function propagateReleaseWithApiKey(
+  propagationUrl: string,
+  cid: string,
+  apiKey: string,
+): Promise<void> {
+  if (!isValidCid(cid)) {
+    throw new Error(`Invalid CID format: ${cid}`);
+  }
+
+  const body = JSON.stringify({ cid });
+
+  const res = await fetch(`${propagationUrl}/api/propagate-content`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": apiKey,
+    },
+    body,
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(
+      `Propagation request failed (${res.status}): ${text}`,
+    );
+  }
+}

@@ -1,5 +1,10 @@
 import React, { useEffect } from "react";
-import { writeIpfsApiUrls, writeIpfsGatewayUrl, writePropagationUrl } from "settings";
+import {
+  writeIpfsApiUrls,
+  writeIpfsGatewayUrl,
+  writePropagationApiKey,
+  writePropagationUrl,
+} from "settings";
 import BaseCard from "components/BaseCard";
 import Button from "components/Button";
 import Title from "components/Title";
@@ -12,6 +17,8 @@ interface IpfsSettingsStepProps {
   setIpfsGatewayUrl: React.Dispatch<React.SetStateAction<string>>;
   propagationUrl: string;
   setPropagationUrl: React.Dispatch<React.SetStateAction<string>>;
+  propagationApiKey: string;
+  setPropagationApiKey: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function IpfsSettingsStep({
@@ -22,10 +29,13 @@ export default function IpfsSettingsStep({
   setIpfsGatewayUrl,
   propagationUrl,
   setPropagationUrl,
+  propagationApiKey,
+  setPropagationApiKey,
 }: IpfsSettingsStepProps) {
   useEffect(() => writeIpfsApiUrls(ipfsApiUrls), [ipfsApiUrls]);
   useEffect(() => writeIpfsGatewayUrl(ipfsGatewayUrl), [ipfsGatewayUrl]);
   useEffect(() => writePropagationUrl(propagationUrl), [propagationUrl]);
+  useEffect(() => writePropagationApiKey(propagationApiKey), [propagationApiKey]);
   return (
     <BaseCard hasBack={() => setStepper((prevState) => prevState - 1)}>
       <Title title={"2. Edit IPFS settings"} />
@@ -77,6 +87,18 @@ export default function IpfsSettingsStep({
           placeholder="https://propagation-api.dappnode.io"
           value={propagationUrl}
           onChange={(e) => setPropagationUrl(e.target.value)}
+        />
+      </div>
+      <div className="flex flex-col gap-1">
+        <div className="text-text-purple text-xs">API Key</div>
+        <input
+          className={
+            " rounded-2xl bg-background-color p-3 text-xs focus:outline-focused-purple "
+          }
+          type="password"
+          placeholder="Optional — skips signature prompt"
+          value={propagationApiKey}
+          onChange={(e) => setPropagationApiKey(e.target.value)}
         />
       </div>
       <Button onClick={() => setStepper((prevState) => prevState + 1)}>

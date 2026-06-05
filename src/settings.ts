@@ -49,3 +49,13 @@ export function readPropagationUrl(): string {
 export function writePropagationUrl(propagationUrl: string): void {
   localStorage.setItem(propagationUrlKey, propagationUrl);
 }
+
+const propagationApiKeyKey = "propagation-api-key";
+
+export function readPropagationApiKey(): string {
+  return localStorage.getItem(propagationApiKeyKey) ?? "";
+}
+
+export function writePropagationApiKey(apiKey: string): void {
+  localStorage.setItem(propagationApiKeyKey, apiKey);
+}

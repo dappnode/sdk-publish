@@ -13,6 +13,7 @@ import { fetchReleaseSignature } from "utils/fetchRelease";
 import {
   checkPropagationWhitelist,
   propagateRelease,
+  propagateReleaseWithApiKey,
 } from "utils/propagateRelease";
 import { resolveDnpName } from "utils/resolveDnpName";
 import { signRelease } from "utils/signRelease";
@@ -33,6 +34,7 @@ interface SignAndPublishProps {
   ipfsApiUrls: string;
   ipfsGatewayUrl: string;
   propagationUrl: string;
+  propagationApiKey: string;
 }
 
 export default function SignAndPublish({
@@ -47,6 +49,7 @@ export default function SignAndPublish({
   ipfsApiUrls,
   ipfsGatewayUrl,
   propagationUrl,
+  propagationApiKey,
 }: SignAndPublishProps) {
   const { address: account, getProvider } = useWallet();
   const provider = getProvider();
@@ -92,11 +95,38 @@ export default function SignAndPublish({
   // Check propagation whitelist after release is signed
   useEffect(() => {
     if (signedReleaseHash && propagationUrl && account) {
-      checkPropagationWhitelist(propagationUrl, account).then(
-        setIsPropagationWhitelisted,
-      );
+      // If API key is set, skip whitelist check — just mark as whitelisted
+      if (propagationApiKey) {
+        setIsPropagationWhitelisted(true);
+      } else {
+        checkPropagationWhitelist(propagationUrl, account).then(
+          setIsPropagationWhitelisted,
+        );
+      }
     }
-  }, [signedReleaseHash, propagationUrl, account]);
+  }, [signedReleaseHash, propagationUrl, account, propagationApiKey]);
+
+  // Auto-propagate when API key is present (no signature needed)
+  useEffect(() => {
+    if (
+      isPropagationWhitelisted &&
+      propagationApiKey &&
+      signReq.result &&
+      propagationUrl &&
+      propagationStatus === "idle"
+    ) {
+      setPropagationStatus("signing");
+      propagateReleaseWithApiKey(propagationUrl, signReq.result, propagationApiKey)
+        .then(() => setPropagationStatus("dispatched"))
+        .catch((e) => {
+          console.warn("Propagation with API key failed", e);
+          setPropagationStatus("error");
+          setPropagationError(
+            e instanceof Error ? e.message : "Propagation failed",
+          );
+        });
+    }
+  }, [isPropagationWhitelisted, propagationApiKey, signReq.result, propagationUrl, propagationStatus]);
 
   async function doPropagate() {
     try {
@@ -252,7 +282,7 @@ export default function SignAndPublish({
             The release is ready to be published
           </p>
 
-          {isPropagationWhitelisted && propagationStatus === "idle" && (
+          {isPropagationWhitelisted && !propagationApiKey && propagationStatus === "idle" && (
             <div className="rounded-xl border border-text-purple/20 p-3">
               <p className="text-sm font-medium text-text-purple">
                 Propagate to DAppNode network
@@ -265,7 +295,7 @@ export default function SignAndPublish({
             </div>
           )}
           {propagationStatus === "signing" && (
-            <LoadingView steps={["Signing propagation request"]} />
+            <LoadingView steps={["Propagating release"]} />
           )}
           {propagationStatus === "dispatched" && (
             <p className="text-center text-sm text-success-green">
