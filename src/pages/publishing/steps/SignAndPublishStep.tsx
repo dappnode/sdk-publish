@@ -6,7 +6,7 @@ import Title from "components/Title";
 
 import { ErrorView } from "components/ErrorView";
 import { LoadingView } from "components/LoadingView";
-import { parseIpfsUrls } from "settings";
+import { parseIpfsUrls, readPropagationApiKey, readPropagationUrl } from "settings";
 import { apmRepoIsAllowed } from "utils/apmRepoIsAllowed";
 import { executePublishTx } from "utils/executePublishTx";
 import { fetchReleaseSignature } from "utils/fetchRelease";
@@ -33,8 +33,6 @@ interface SignAndPublishProps {
   >;
   ipfsApiUrls: string;
   ipfsGatewayUrl: string;
-  propagationUrl: string;
-  propagationApiKey: string;
 }
 
 export default function SignAndPublish({
@@ -48,11 +46,12 @@ export default function SignAndPublish({
   setPublishReqStatus,
   ipfsApiUrls,
   ipfsGatewayUrl,
-  propagationUrl,
-  propagationApiKey,
 }: SignAndPublishProps) {
   const { address: account, getProvider } = useWallet();
   const provider = getProvider();
+
+  const propagationUrl = readPropagationUrl();
+  const propagationApiKey = readPropagationApiKey();
 
   const [signedReleaseHash, setSignedReleaseHash] = useState<string>("");
 
