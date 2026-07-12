@@ -42,4 +42,4 @@ export async function grantDeveloper(
     e.message = `Error granting developer permission for ${dnpName}: ${e.message}`;
     throw e;
   }
-} 
+}
