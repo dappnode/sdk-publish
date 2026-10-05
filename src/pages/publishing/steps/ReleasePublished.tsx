@@ -5,48 +5,46 @@ import Button from "components/Button";
 import Title from "components/Title";
 import Link from "components/Link";
 
-interface IntroductionStepProps {
+interface ReleasePublishedProps {
   setStepper: React.Dispatch<React.SetStateAction<number>>;
   publishReqStatus: RequestStatus<string>;
   repoAddresses: RepoAddresses | undefined;
 }
 
-export default function IntroductionStep({
+export default function ReleasePublished({
   setStepper,
   publishReqStatus,
   repoAddresses,
-}: IntroductionStepProps) {
+}: ReleasePublishedProps) {
   return (
     <BaseCard>
       <Title title={"Release queued"} />
       <p>
-        Your transaction has been successfully queued! It will be processed
-        sooner or later based on the gas fee you provided.
+        Your transaction has been queued successfully. It will be included in a
+        block as soon as the gas fee you set becomes competitive, so it may take
+        a while.
       </p>
       {publishReqStatus.result && (
-        <div>
-          <span className="text-text-purple">Transaction hash: </span>
-          <span className="font-poppins font-medium">
+        <p>
+          Transaction hash:{" "}
+          <Link
+            href={`https://etherscan.io/tx/${publishReqStatus.result}`}
+            className="break-all font-medium"
+          >
             {publishReqStatus.result}
-          </span>
-        </div>
+          </Link>
+        </p>
       )}
-      <p>
-        To check the transaction status and details navigate{" "}
-        <Link href={`https://etherscan.io/tx/${publishReqStatus.result}`}>
-          here.
-        </Link>
-      </p>
 
       {repoAddresses?.registryAddress && (
         <p>
-          {" "}
-          To check the hash content in dappnode explorer navigate{" "}
+          You can also browse the published hash in the{" "}
           <Link
-            href={`https://dappnode.github.io/explorer/#/repo/${repoAddresses.repoAddress?.toLocaleLowerCase()}`}
+            href={`https://dappnode.github.io/explorer/#/repo/${repoAddresses.repoAddress?.toLowerCase()}`}
           >
-            here
+            DAppNode Explorer
           </Link>
+          .
         </p>
       )}
 
