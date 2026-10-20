@@ -42,4 +42,4 @@ export async function revokeDeveloper(
     e.message = `Error revoking developer permission for ${dnpName}: ${e.message}`;
     throw e;
   }
-} 
+}
